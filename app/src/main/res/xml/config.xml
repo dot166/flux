@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.preference.PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <EditTextPreference android:key="rssUrls" android:title="@string/rss_feed_urls" android:summary="@string/separated_by"/>
+    <SwitchPreference android:key="show_desc_by_default_in_rss" android:title="@string/always_show_description_in_rss_feed_list" android:summary="@string/by_default"/>
+</androidx.preference.PreferenceScreen>

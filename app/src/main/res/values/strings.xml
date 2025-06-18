@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">RSS Reader</string>
+    <string name="rss_feed_urls">RSS Feed URLs</string>
+    <string name="separated_by">separated by \';\'</string>
+    <string name="always_show_description_in_rss_feed_list">Always show description in RSS Feed list</string>
+    <string name="by_default">by default, categories are shown and the description is a fallback, turning this on forces the description to be shown</string>
+</resources>
