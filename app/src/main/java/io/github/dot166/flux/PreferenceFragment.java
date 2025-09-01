@@ -1,6 +1,7 @@
 package io.github.dot166.flux;
 
 import android.content.SharedPreferences;
+import android.os.Bundle;
 
 import androidx.annotation.Nullable;
 
@@ -9,6 +10,12 @@ import java.util.Objects;
 import io.github.dot166.jlib.app.jConfigActivity;
 
 public class PreferenceFragment extends jConfigActivity.jLIBSettingsFragment implements SharedPreferences.OnSharedPreferenceChangeListener {
+
+    @Override
+    public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
+        super.onCreatePreferences(savedInstanceState, rootKey);
+        getPreferenceManager().getSharedPreferences().registerOnSharedPreferenceChangeListener(this);
+    }
 
     @Override
     public int preferenceXML() {
