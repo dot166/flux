@@ -19,7 +19,6 @@ import io.github.dot166.jlib.app.jActivity
 import io.github.dot166.jlib.app.jConfigActivity.jLIBSettingsFragment
 import io.github.dot166.jlib.rss.RSSAlarmScheduler
 import io.github.dot166.jlib.rss.RSSFragment
-import io.github.dot166.jlib.rss.RSSViewModel
 import io.github.dot166.jlib.time.ReminderItem
 import io.github.dot166.jlib.utils.ErrorUtils
 import kotlinx.coroutines.DelicateCoroutinesApi
@@ -96,32 +95,62 @@ class MainActivity : jActivity() {
                 navigationView.getMenu().add(0, i + 1, 0, channel.title)
                 val uri = URI.create(rssUrls[i])
 
-                val uriNoPath = uri.resolve("/")
+                var uriNoPath = uri.resolve("/")
+                if (uriNoPath.toString().contains("feeds.bbci.co.uk")) {
+                    uriNoPath = URI.create("bbc.co.uk")
+                }
                 val finalI = i
-                Glide.with(this@MainActivity)
-                    .load("https://www.google.com/s2/favicons?domain=" + uriNoPath.toString())
-                    .into(object : CustomTarget<Drawable?>() {
-                        override fun onResourceReady(
-                            resource: Drawable,
-                            transition: Transition<in Drawable?>?
-                        ) {
-                            val ld = LayerDrawable(
-                                arrayOf<Drawable>(
-                                    ColorDrawable(
-                                        obtainStyledAttributes(
-                                            intArrayOf(com.google.android.material.R.attr.colorOnSurface)
-                                        ).getColor(0, 0)
-                                    ), resource
+                if (channel.image != null) {
+                    Glide.with(this@MainActivity)
+                        .load(channel.image!!.url)
+                        .into(object : CustomTarget<Drawable?>() {
+                            override fun onResourceReady(
+                                resource: Drawable,
+                                transition: Transition<in Drawable?>?
+                            ) {
+                                val ld = LayerDrawable(
+                                    arrayOf<Drawable>(
+                                        ColorDrawable(
+                                            obtainStyledAttributes(intArrayOf(com.google.android.material.R.attr.colorOnSurface)).getColor(
+                                                0,
+                                                0
+                                            )
+                                        ), resource
+                                    )
                                 )
-                            )
-                            navigationView.getMenu().findItem(finalI + 1).setIcon(ld)
-                        }
+                                navigationView.getMenu().findItem(finalI + 1).setIcon(ld)
+                            }
 
-                        override fun onLoadCleared(placeholder: Drawable?) {
-                        }
-                    })
+                            override fun onLoadCleared(placeholder: Drawable?) {
+                            }
+                        })
+                } else {
+                    Glide.with(this@MainActivity)
+                        .load("https://www.google.com/s2/favicons?domain=" + uriNoPath.toString())
+                        .into(object : CustomTarget<Drawable?>() {
+                            override fun onResourceReady(
+                                resource: Drawable,
+                                transition: Transition<in Drawable?>?
+                            ) {
+                                val ld = LayerDrawable(
+                                    arrayOf<Drawable>(
+                                        ColorDrawable(
+                                            obtainStyledAttributes(intArrayOf(com.google.android.material.R.attr.colorOnSurface)).getColor(
+                                                0,
+                                                0
+                                            )
+                                        ), resource
+                                    )
+                                )
+                                navigationView.getMenu().findItem(finalI + 1).setIcon(ld)
+                            }
+
+                            override fun onLoadCleared(placeholder: Drawable?) {
+                            }
+                        })
+                }
                 if (navigationView.getMenu().findItem(i + 1).getIcon() == null) {
-                    navigationView.getMenu().findItem(finalI + 1)
+                    navigationView.getMenu().findItem(i + 1)
                         .setIcon(R.drawable.ic_launcher_foreground)
                 }
             }
