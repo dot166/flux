@@ -4,7 +4,6 @@ import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.LayerDrawable;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 
@@ -12,6 +11,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.Toolbar;
 import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.preference.PreferenceManager;
 
 import com.bumptech.glide.Glide;
@@ -21,18 +21,23 @@ import com.google.android.material.navigation.NavigationView;
 import com.prof18.rssparser.model.RssChannel;
 
 import java.net.URI;
+import java.util.Calendar;
 
 import io.github.dot166.jlib.app.jActivity;
-import io.github.dot166.jlib.app.jConfigActivity;
+import io.github.dot166.jlib.rss.RSSAlarmScheduler;
 import io.github.dot166.jlib.rss.RSSFragment;
 import io.github.dot166.jlib.rss.RSSViewModel;
+import io.github.dot166.jlib.time.ReminderItem;
 
 public class MainActivity extends jActivity {
+
+    private RSSViewModel viewModel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         String[] rssUrls = PreferenceManager.getDefaultSharedPreferences(this).getString("rssUrls", "").split(";");
+        viewModel = new ViewModelProvider(this).get(RSSViewModel.class);
         setContentView(R.layout.activity_main);
         Toolbar topAppBar = findViewById(R.id.actionbar);
         setSupportActionBar(topAppBar);
@@ -56,14 +61,24 @@ public class MainActivity extends jActivity {
                 }
                 menuItem.setChecked(true);
                 if (menuItem.getItemId() != Integer.MAX_VALUE) {
-                    getSupportFragmentManager().beginTransaction().replace(R.id.fragment, new RSSFragment(menuItem.getItemId())).commit();
+                    getSupportFragmentManager().beginTransaction()
+                            .replace(R.id.fragment, new RSSFragment(menuItem.getItemId()))
+                            .commit();
                 } else {
-                    getSupportFragmentManager().beginTransaction().replace(R.id.fragment, (jConfigActivity.jLIBSettingsFragment) new PreferenceFragment()).commit();
+                    getSupportFragmentManager().beginTransaction().replace(R.id.fragment, new PreferenceFragment()).commit();
                 }
                 drawerLayout.close();
                 return true;
             }
         });
+        Calendar cal = Calendar.getInstance();
+        cal.set(Calendar.HOUR_OF_DAY, cal.get(Calendar.HOUR_OF_DAY) + 1);
+        cal.set(Calendar.MINUTE, 0);
+        cal.set(Calendar.SECOND, 0);
+        cal.set(Calendar.MILLISECOND, 0);
+
+        ReminderItem reminderItem = new ReminderItem(cal.getTimeInMillis(), 1);
+        new RSSAlarmScheduler(this).schedule(reminderItem);
     }
 
     public void rebuildMenu(NavigationView navigationView, String[] rssUrls, int requiredId) {
@@ -72,28 +87,56 @@ public class MainActivity extends jActivity {
         navigationView.getMenu().add(0, 0, 0, "All Feeds");
         navigationView.getMenu().findItem(0).setIcon(R.drawable.ic_launcher_foreground);
         for (int i = 0; i < rssUrls.length; i++) {
-            RssChannel channel = (new RSSViewModel()).fetchFeedWithoutViewModel(rssUrls[i], this);
-            navigationView.getMenu().add(0, i+1, 0, channel.getTitle());
-            URI uri = URI.create(rssUrls[i]);
+            String url = rssUrls[i];
+            int itemId = i + 1;
 
-            URI uriNoPath = uri.resolve("/");
-            int finalI = i;
-            Glide.with(MainActivity.this)
-                    .load("https://www.google.com/s2/favicons?domain=" + uriNoPath.toString())
-                    .into(new CustomTarget<Drawable>() {
-                        @Override
-                        public void onResourceReady(@NonNull Drawable resource, @Nullable Transition<? super Drawable> transition) {
-                            LayerDrawable ld = new LayerDrawable(new Drawable[]{new ColorDrawable(obtainStyledAttributes(new int[]{com.google.android.material.R.attr.colorOnSurface}).getColor(0, 0)), resource});
-                            navigationView.getMenu().findItem(finalI+1).setIcon(ld);
-                        }
+            // Add placeholder first
+            navigationView.getMenu().add(0, itemId, 0, "Loading...")
+                    .setIcon(R.drawable.ic_launcher_foreground);
 
-                        @Override
-                        public void onLoadCleared(@Nullable Drawable placeholder) {
-                        }
-                    });
-            if (navigationView.getMenu().findItem(i+1).getIcon() == null) {
-                navigationView.getMenu().findItem(finalI+1).setIcon(R.drawable.ic_launcher_foreground);
-            }
+            // Observe channel updates
+            viewModel.getChannel(url).observe(this, channel -> {
+                if (channel != null && channel.getTitle() != null) {
+                    navigationView.getMenu().findItem(itemId).setTitle(channel.getTitle());
+
+                    URI uri = URI.create(url);
+                    URI uriNoPath = uri.resolve("/");
+                    if (uriNoPath.toString().contains("feeds.bbci.co.uk")) {
+                        uriNoPath = URI.create("bbc.co.uk");
+                    }
+
+                    if (channel.getImage() != null) {
+                        Glide.with(MainActivity.this)
+                                .load(channel.getImage().getUrl())
+                                .into(new CustomTarget<Drawable>() {
+                                    @Override
+                                    public void onResourceReady(@NonNull Drawable resource, @Nullable Transition<? super Drawable> transition) {
+                                        LayerDrawable ld = new LayerDrawable(new Drawable[]{
+                                                new ColorDrawable(obtainStyledAttributes(new int[]{com.google.android.material.R.attr.colorOnSurface}).getColor(0, 0)), resource
+                                        });
+                                        navigationView.getMenu().findItem(itemId).setIcon(ld);
+                                    }
+                                    @Override public void onLoadCleared(@Nullable Drawable placeholder) {}
+                                });
+                    } else {
+                        Glide.with(MainActivity.this)
+                                .load("https://www.google.com/s2/favicons?domain=" + uriNoPath.toString())
+                                .into(new CustomTarget<Drawable>() {
+                                    @Override
+                                    public void onResourceReady(@NonNull Drawable resource, @Nullable Transition<? super Drawable> transition) {
+                                        LayerDrawable ld = new LayerDrawable(new Drawable[]{
+                                                new ColorDrawable(obtainStyledAttributes(new int[]{com.google.android.material.R.attr.colorOnSurface}).getColor(0, 0)), resource
+                                        });
+                                        navigationView.getMenu().findItem(itemId).setIcon(ld);
+                                    }
+                                    @Override public void onLoadCleared(@Nullable Drawable placeholder) {}
+                                });
+                    }
+                }
+            });
+
+            // Kick off fetch
+            viewModel.fetchFeedAsync(url);
         }
         navigationView.getMenu().add(0, Integer.MAX_VALUE, 0, getString(io.github.dot166.jlib.R.string.settings_name));
         navigationView.getMenu().findItem(Integer.MAX_VALUE).setIcon(io.github.dot166.jlib.R.mipmap.settings);
