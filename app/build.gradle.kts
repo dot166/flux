@@ -30,5 +30,5 @@ android {
 }
 
 dependencies {
-    implementation("io.github.dot166:j-Lib:98")
+    implementation("io.github.dot166:j-Lib:99")
 }
