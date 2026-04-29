@@ -1,0 +1,40 @@
+[versions]
+accompanistDrawablepainter = "0.37.3"
+activityCompose = "1.13.0"
+agp = "9.2.0"
+coilCompose = "2.7.0"
+compose = "2.3.21"
+glide = "5.0.7"
+jLib = "104.2.25"
+kotlinxCoroutinesGuava = "1.10.2"
+lifecycleViewmodelCompose = "2.10.0"
+material3Android = "1.4.0"
+materialIconsExtended = "1.7.8"
+media3 = "1.10.0"
+rssparser = "6.1.5"
+uiAndroid = "1.11.0"
+material3 = "1.4.0"
+ui = "1.11.0"
+
+[plugins]
+android = { id = "com.android.application", version.ref = "agp" }
+compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "compose" }
+
+[libraries]
+accompanist-drawablepainter = { module = "com.google.accompanist:accompanist-drawablepainter", version.ref = "accompanistDrawablepainter" }
+androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "activityCompose" }
+androidx-lifecycle-viewmodel-compose = { module = "androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "lifecycleViewmodelCompose" }
+androidx-material-icons-extended = { module = "androidx.compose.material:material-icons-extended", version.ref = "materialIconsExtended" }
+androidx-material3-android = { module = "androidx.compose.material3:material3-android", version.ref = "material3Android" }
+androidx-media3-common = { module = "androidx.media3:media3-common", version.ref = "media3" }
+androidx-media3-exoplayer = { module = "androidx.media3:media3-exoplayer", version.ref = "media3" }
+androidx-media3-session = { module = "androidx.media3:media3-session", version.ref = "media3" }
+androidx-ui-android = { module = "androidx.compose.ui:ui-android", version.ref = "uiAndroid" }
+coil-compose = { module = "io.coil-kt:coil-compose", version.ref = "coilCompose" }
+compiler = { module = "com.github.bumptech.glide:compiler", version.ref = "glide" }
+glide = { module = "com.github.bumptech.glide:glide", version.ref = "glide" }
+j-lib = { module = "io.github.dot166:j-Lib", version.ref = "jLib" }
+kotlinx-coroutines-guava = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-guava", version.ref = "kotlinxCoroutinesGuava" }
+rssparser = { module = "com.prof18.rssparser:rssparser", version.ref = "rssparser" }
+androidx-material3 = { group = "androidx.compose.material3", name = "material3", version.ref = "material3" }
+androidx-ui = { group = "androidx.compose.ui", name = "ui", version.ref = "ui" }

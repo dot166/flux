@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="m3_sys_color_dynamic_secondary">@color/m3_sys_color_dynamic_dark_secondary</color>
+    <color name="m3_dynamic_true_default_color_secondary_text">@color/m3_dynamic_dark_default_color_secondary_text</color>
+    <color name="m3_sys_color_dynamic_on_surface_variant">@color/m3_sys_color_dynamic_dark_on_surface_variant</color>
+    <color name="m3_sys_color_dynamic_on_surface">@color/m3_sys_color_dynamic_dark_on_surface</color>
+    <color name="m3_sys_color_dynamic_background">@color/m3_sys_color_dynamic_dark_background</color>
+</resources>
