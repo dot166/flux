@@ -14,7 +14,7 @@ media3 = "1.10.0"
 rssparser = "6.1.5"
 uiAndroid = "1.11.0"
 material3 = "1.4.0"
-ui = "1.11.0"
+ui = "1.11.1"
 
 [plugins]
 android = { id = "com.android.application", version.ref = "agp" }
