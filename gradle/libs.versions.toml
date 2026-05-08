@@ -5,16 +5,15 @@ agp = "9.2.0"
 coilCompose = "2.7.0"
 compose = "2.3.21"
 glide = "5.0.7"
-jLib = "104.2.25"
+jLib = "104.2.28"
 kotlinxCoroutinesGuava = "1.10.2"
 lifecycleViewmodelCompose = "2.10.0"
 material3Android = "1.4.0"
 materialIconsExtended = "1.7.8"
 media3 = "1.10.0"
 rssparser = "6.1.5"
-uiAndroid = "1.11.0"
+uiAndroid = "1.11.1"
 material3 = "1.4.0"
-ui = "1.11.0"
 
 [plugins]
 android = { id = "com.android.application", version.ref = "agp" }
@@ -37,4 +36,3 @@ j-lib = { module = "io.github.dot166:j-Lib", version.ref = "jLib" }
 kotlinx-coroutines-guava = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-guava", version.ref = "kotlinxCoroutinesGuava" }
 rssparser = { module = "com.prof18.rssparser:rssparser", version.ref = "rssparser" }
 androidx-material3 = { group = "androidx.compose.material3", name = "material3", version.ref = "material3" }
-androidx-ui = { group = "androidx.compose.ui", name = "ui", version.ref = "ui" }

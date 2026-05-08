@@ -28,6 +28,7 @@ import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.ListenableFuture
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.guava.future
 import kotlinx.coroutines.launch
@@ -71,9 +72,6 @@ class RssAudioService : MediaLibraryService() {
         player.addListener(object: Player.Listener {
             override fun onMediaItemTransition(item: MediaItem?, reason: Int) {
                 player.saveQueue(PreferenceManager.getDefaultSharedPreferences(this@RssAudioService), savedMediaItems)
-                PreferenceManager.getDefaultSharedPreferences(this@RssAudioService).edit {
-                    remove("episode_${savedMediaItems[0].mediaMetadata.station?.toString()}_${player.currentMediaItemIndex-1}_position")
-                }
             }
 
             override fun onMediaMetadataChanged(mediaMetadata: MediaMetadata) {
@@ -272,9 +270,15 @@ class RssAudioService : MediaLibraryService() {
         views.setTextViewText(R.id.line1, mediaMetadata.title ?: "")
         views.setTextViewText(R.id.line2, mediaMetadata.artist ?: "")
         if (player.isPlaying) {
-            views.setImageViewResource(R.id.button6, androidx.media3.session.R.drawable.media3_icon_pause)
+            views.setImageViewResource(
+                R.id.button6,
+                androidx.media3.session.R.drawable.media3_icon_pause
+            )
         } else {
-            views.setImageViewResource(R.id.button6, androidx.media3.session.R.drawable.media3_icon_play)
+            views.setImageViewResource(
+                R.id.button6,
+                androidx.media3.session.R.drawable.media3_icon_play
+            )
         }
         views.setOnClickPendingIntent(
             R.id.button5,
@@ -308,12 +312,11 @@ class RssAudioService : MediaLibraryService() {
         )
         views.setOnClickPendingIntent(
             R.id.layout,
-            PendingIntent.getForegroundService(
+            PendingIntent.getActivity(
                 this,
                 4,
-                Intent(this, RssAudioService::class.java).apply {
-                    action = "ACTION_START_ACTIVITY"
-                }, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+                Intent(this, MainActivity::class.java),
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
             )
         )
         manager.updateAppWidget(ids, views)

@@ -1,13 +1,7 @@
 package io.github.dot166.flux
 
 import android.os.Bundle
-import android.widget.EditText
-import android.widget.FrameLayout
-import android.widget.LinearLayout
-import android.widget.LinearLayout.VERTICAL
-import android.widget.TextView
 import androidx.activity.compose.setContent
-import androidx.appcompat.widget.SwitchCompat
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -30,30 +24,36 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBar
-import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.core.content.edit
-import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.preference.PreferenceManager
-import io.github.dot166.jlib.app.SettingsLibAlertDialogBuilder
+import androidx.compose.ui.window.DialogProperties
+import io.github.dot166.jlib.RSSFeed
+import io.github.dot166.jlib.app.SettingsLibComposeDialog
+import io.github.dot166.jlib.app.SettingsLibComposeTheme
 import io.github.dot166.jlib.app.jActivity
 
 class RSSUrlsPreferenceActivity: jActivity() {
     @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        Repository.getInstance(this)
         setContent {
-            AppTheme {
-                val viewModel: RSSViewModel = viewModel()
-                val refreshing = viewModel.state.collectAsState().value.refreshing
-                val list = viewModel.state.collectAsState().value.listOfData
-                val editableList = list.toMutableUrlList()
-                val editableHiddenList = list.toMutableHiddenList()
+            SettingsLibComposeTheme {
+                val repo = Repository.getInstance(this)
+                var refreshing by remember { mutableStateOf(true) }
+                val list = repo.getFeeds()
+                var showAddDialog by remember { mutableStateOf(false) }
+                var showDeleteDialog by remember { mutableStateOf(false) }
+                var text by remember { mutableStateOf("") }
+                var checked by remember { mutableStateOf(false) }
                 Scaffold(
                     topBar = {
                         TopAppBar(
@@ -63,50 +63,9 @@ class RSSUrlsPreferenceActivity: jActivity() {
                             actions = {
                                 IconButton(
                                     onClick = {
-                                        val alertDialog = SettingsLibAlertDialogBuilder(this@RSSUrlsPreferenceActivity)
-                                        alertDialog.setTitle(getString(R.string.rssfeed))
-
-                                        val layout = LinearLayout(this@RSSUrlsPreferenceActivity)
-                                        val input = EditText(this@RSSUrlsPreferenceActivity)
-                                        val lp = LinearLayout.LayoutParams(
-                                            LinearLayout.LayoutParams.MATCH_PARENT,
-                                            LinearLayout.LayoutParams.MATCH_PARENT
-                                        )
-                                        input.layoutParams = lp
-                                        layout.addView(input)
-                                        val layoutSwitch =
-                                            FrameLayout(this@RSSUrlsPreferenceActivity)
-                                        val excludeSwitchText =
-                                            TextView(this@RSSUrlsPreferenceActivity)
-                                        excludeSwitchText.setText(R.string.exclude_from_all_feeds_view)
-                                        layoutSwitch.addView(excludeSwitchText)
-                                        val excludeSwitch = SwitchCompat(this@RSSUrlsPreferenceActivity)
-                                        layoutSwitch.addView(excludeSwitch)
-                                        layout.addView(layoutSwitch)
-                                        alertDialog.setView(layout)
-
-                                        alertDialog.setPositiveButton(android.R.string.ok) { _, _ ->
-                                            val url = input.text.toString()
-                                            val hidden = excludeSwitch.isChecked
-                                            editableList.add(url)
-                                            if (hidden) {
-                                                editableHiddenList.add(url)
-                                            }
-                                            PreferenceManager.getDefaultSharedPreferences(this@RSSUrlsPreferenceActivity).edit {
-                                                putString("RssUrls", editableList.toRSSString())
-                                                putString(
-                                                    "ExcludedRssUrls",
-                                                    editableHiddenList.toRSSString()
-                                                )
-                                            }
-                                            viewModel.refreshAll(this@RSSUrlsPreferenceActivity)
-                                        }
-
-                                        alertDialog.setNegativeButton(android.R.string.cancel) { dialog, _ ->
-                                            dialog.cancel()
-                                        }
-
-                                        alertDialog.show()
+                                        showAddDialog = true
+                                        text = ""
+                                        checked = false
                                     }
                                 ) { Icon(Icons.Filled.Add, contentDescription = stringResource(R.string.add_feed)) }
                             },
@@ -133,7 +92,7 @@ class RSSUrlsPreferenceActivity: jActivity() {
                             Text(text = stringResource(R.string.loading))
                         } else {
                             LazyColumn(Modifier.fillMaxSize()) {
-                                items(list.toSortedList()) {
+                                items(list) {
                                     ListItem({
                                         ElevatedCard(
                                             elevation = CardDefaults.cardElevation(
@@ -152,64 +111,9 @@ class RSSUrlsPreferenceActivity: jActivity() {
                                                 Text(text = it.url, modifier = Modifier.widthIn(5.dp, 280.dp))
                                                 Row {
                                                     IconButton(onClick = {
-                                                        val alertDialog =
-                                                            SettingsLibAlertDialogBuilder(this@RSSUrlsPreferenceActivity)
-                                                        alertDialog.setTitle(getString(R.string.rssfeed))
-
-                                                        val layout = LinearLayout(this@RSSUrlsPreferenceActivity)
-                                                        layout.orientation = VERTICAL
-                                                        val input =
-                                                            EditText(this@RSSUrlsPreferenceActivity)
-                                                        val lp = LinearLayout.LayoutParams(
-                                                            LinearLayout.LayoutParams.MATCH_PARENT,
-                                                            LinearLayout.LayoutParams.MATCH_PARENT
-                                                        )
-                                                        input.layoutParams = lp
-                                                        input.setText(it.url)
-                                                        layout.addView(input)
-                                                        val layoutSwitch =
-                                                            LinearLayout(this@RSSUrlsPreferenceActivity)
-                                                        val excludeSwitchText =
-                                                            TextView(this@RSSUrlsPreferenceActivity)
-                                                        excludeSwitchText.setText(R.string.exclude_from_all_feeds_view)
-                                                        layoutSwitch.addView(excludeSwitchText)
-                                                        val excludeSwitch = SwitchCompat(this@RSSUrlsPreferenceActivity)
-                                                        excludeSwitch.isChecked = it.hiddenFromAll
-                                                        layoutSwitch.addView(excludeSwitch)
-                                                        layout.addView(layoutSwitch)
-                                                        alertDialog.setView(layout)
-
-                                                        alertDialog.setPositiveButton(android.R.string.ok) { _, _ ->
-                                                            val url = input.text.toString()
-                                                            val hidden = excludeSwitch.isChecked
-                                                            editableList.remove(it.url)
-                                                            editableList.add(url)
-                                                            if (editableHiddenList.contains(it.url)) {
-                                                                editableHiddenList.remove(it.url)
-                                                            }
-                                                            if (hidden) {
-                                                                editableHiddenList.add(url)
-                                                            }
-                                                            PreferenceManager.getDefaultSharedPreferences(
-                                                                this@RSSUrlsPreferenceActivity
-                                                            ).edit {
-                                                                putString(
-                                                                    "RssUrls",
-                                                                    editableList.toRSSString()
-                                                                )
-                                                                putString(
-                                                                    "ExcludedRssUrls",
-                                                                    editableHiddenList.toRSSString()
-                                                                )
-                                                            }
-                                                            viewModel.refreshAll(this@RSSUrlsPreferenceActivity)
-                                                        }
-
-                                                        alertDialog.setNegativeButton(android.R.string.cancel) { dialog, _ ->
-                                                            dialog.cancel()
-                                                        }
-
-                                                        alertDialog.show()
+                                                        showAddDialog = true
+                                                        text = it.url
+                                                        checked = it.hiddenFromAll
                                                     }) {
                                                         Icon(
                                                             Icons.Default.Edit,
@@ -217,41 +121,8 @@ class RSSUrlsPreferenceActivity: jActivity() {
                                                         )
                                                     }
                                                     IconButton(onClick = {
-                                                        val alertDialog =
-                                                            SettingsLibAlertDialogBuilder(this@RSSUrlsPreferenceActivity)
-                                                        alertDialog.setTitle(getString(R.string.rssfeed))
-                                                        alertDialog.setMessage(
-                                                            getString(
-                                                                R.string.are_you_sure_you_want_to_delete,
-                                                                it.url
-                                                            )
-                                                        )
-
-                                                        alertDialog.setPositiveButton(getString(R.string.yes)) { _, _ ->
-                                                            editableList.remove(it.url)
-                                                            if (editableHiddenList.contains(it.url)) {
-                                                                editableHiddenList.remove(it.url)
-                                                            }
-                                                            PreferenceManager.getDefaultSharedPreferences(
-                                                                this@RSSUrlsPreferenceActivity
-                                                            ).edit {
-                                                                putString(
-                                                                    "RssUrls",
-                                                                    editableList.toRSSString()
-                                                                )
-                                                                putString(
-                                                                    "ExcludedRssUrls",
-                                                                    editableHiddenList.toRSSString()
-                                                                )
-                                                            }
-                                                            viewModel.refreshAll(this@RSSUrlsPreferenceActivity)
-                                                        }
-
-                                                        alertDialog.setNegativeButton(getString(R.string.no)) { dialog, _ ->
-                                                            dialog.cancel()
-                                                        }
-
-                                                        alertDialog.show()
+                                                        showDeleteDialog = true
+                                                        text = it.url
                                                     }) {
                                                         Icon(
                                                             Icons.Default.Delete,
@@ -267,51 +138,90 @@ class RSSUrlsPreferenceActivity: jActivity() {
                         }
                     }
                 }
+                when {
+                    showAddDialog -> {
+                        SettingsLibComposeDialog(onDismissRequest = {
+                            showAddDialog = false
+                            text = ""
+                            checked = false
+                        }, onPositivePress = {
+                            val url = text
+                            val hidden = checked
+                            if (list.containsUrl(url)) {
+                                list.removeUrl(url)
+                            }
+                            list.addUrl(url, hidden)
+                            repo.saveFeeds(list)
+                            refreshing = true
+                            refreshing = false
+                            showAddDialog = false
+                            text = ""
+                            checked = false
+                        }, positiveContent = {
+                            Text(stringResource(android.R.string.ok))
+                        }, onNegativePress = {
+                            showAddDialog = false
+                            text = ""
+                            checked = false
+                        }, negativeContent = {
+                            Text(stringResource(android.R.string.cancel))
+                        }, properties = DialogProperties()) {
+                            TextField(text, {
+                                text = it
+                            })
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth(),
+                                horizontalArrangement = Arrangement.Center,
+                                ) {
+                                Text(
+                                    text = stringResource(R.string.exclude_from_all_feeds_view),
+                                    modifier = Modifier.padding(16.dp),
+                                    )
+                                Switch(checked, {
+                                    checked = it
+                                })
+                            }
+                        }
+                    }
+                    showDeleteDialog -> {
+                        SettingsLibComposeDialog(onDismissRequest = {
+                            showAddDialog = false
+                            text = ""
+                        }, onPositivePress = {
+                            list.removeUrl(text)
+                            repo.saveFeeds(list)
+                            refreshing = true
+                            refreshing = false
+                            showDeleteDialog = false
+                            text = ""
+                        }, positiveContent = {
+                            Text(stringResource(R.string.yes))
+                        }, onNegativePress = {
+                            showDeleteDialog = false
+                            text = ""
+                        }, negativeContent = {
+                            Text(stringResource(R.string.no))
+                        }, properties = DialogProperties()) {
+                            Text(stringResource(R.string.are_you_sure_you_want_to_delete, text))
+                        }
+                    }
+                }
+                refreshing = false
             }
         }
     }
 
-    private fun MutableMap<Int, RSSFeed?>.toSortedList(): List<RSSFeed> {
-        val list = mutableListOf<RSSFeed>()
-        for (i in 0 until size) {
-            val feed = get(i)
-            if (feed != null && !feed.url.isBlank()) {
-                list.add(feed)
-            }
-        }
-        return list
+    private fun MutableList<RSSFeed>.addUrl(url: String, hidden: Boolean) {
+        add(RSSFeed(false, url, null, hidden)) // can be null as this list gets dumped to JSON and reset with the actual feeds, is never used by the RSS part
     }
 
-    private fun MutableMap<Int, RSSFeed?>.toMutableUrlList(): MutableList<String> {
-        val list = mutableListOf<String>()
-        for (i in 0 until size) {
-            val feed = get(i)
-            if (feed != null && !feed.url.isBlank()) {
-                list.add(feed.url)
-            }
-        }
-        return list
+    private fun MutableList<RSSFeed>.containsUrl(url: String): Boolean {
+        return find { it.url == url } != null
     }
 
-    private fun MutableList<String>.toRSSString(): String {
-        val sb = StringBuilder()
-        for (i in 0 until size) {
-            sb.append(get(i))
-            if (i+1 < size) {
-                sb.append(";")
-            }
-        }
-        return sb.toString()
+    private fun MutableList<RSSFeed>.removeUrl(url: String) {
+        remove(find { it.url == url })
     }
-}
 
-private fun MutableMap<Int, RSSFeed?>.toMutableHiddenList(): MutableList<String> {
-    val list = mutableListOf<String>()
-    for (i in 0 until size) {
-        val feed = get(i)
-        if (feed != null && !feed.url.isBlank() && feed.hiddenFromAll) {
-            list.add(feed.url)
-        }
-    }
-    return list
 }

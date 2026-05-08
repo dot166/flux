@@ -3,9 +3,7 @@ package io.github.dot166.flux
 import android.app.Application
 import android.content.ComponentName
 import android.content.Context
-import android.util.Log
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -17,6 +15,8 @@ import androidx.media3.session.MediaController
 import androidx.media3.session.SessionToken
 import com.google.common.util.concurrent.MoreExecutors
 import com.prof18.rssparser.model.RssChannel
+import io.github.dot166.jlib.RSSFeed
+import io.github.dot166.jlib.utils.DateUtils
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -41,8 +41,6 @@ class RSSViewModel(app: Application) : AndroidViewModel(app) {
     var duration by mutableLongStateOf(0L)
     var isPlaying by mutableStateOf(false)
     var mediaMetadata by mutableStateOf(MediaMetadata.EMPTY)
-    var repeatMode by mutableIntStateOf(Player.REPEAT_MODE_OFF)
-    var shuffleModeEnabled by mutableStateOf(false)
 
     init {
         refreshAll(app)
@@ -63,7 +61,7 @@ class RSSViewModel(app: Application) : AndroidViewModel(app) {
             put(0, null) // dummy
         } }
         val repo = Repository.getInstance(ctx)
-        val urls = repo.getFeedUrls()
+        val urls = repo.getFeeds()
         val allFeeds = fetchAllFeeds(urls, ctx)
         listFlow.update { it.toMutableMap().apply {
             put(0, allFeeds)
@@ -72,17 +70,17 @@ class RSSViewModel(app: Application) : AndroidViewModel(app) {
         refreshingFlow.value = false
     }
 
-    fun refresh(url: String, ctx: Context) = viewModelScope.launch(Dispatchers.IO) {
+    fun refresh(feed: RSSFeed, ctx: Context) = viewModelScope.launch(Dispatchers.IO) {
         refreshingFlow.value = true
         val repo = Repository.getInstance(ctx)
         var key = 0
-        listFlow.update { it.toMutableMap().apply { key = filterValues { urlInReg -> urlInReg!!.url == url }.keys.first() } }
-        listFlow.update { it.toMutableMap().apply { put(key, repo.fetchFeed(url)) } }
+        listFlow.update { it.toMutableMap().apply { key = filterValues { urlInReg -> urlInReg!!.url == feed.url }.keys.first() } }
+        listFlow.update { it.toMutableMap().apply { put(key, repo.fetchFeed(feed)) } }
         flow.emit(listFlow.value[key])
         refreshingFlow.value = false
     }
 
-    suspend fun fetchAllFeeds(urls: List<String>, ctx: Context): RSSFeed = coroutineScope {
+    suspend fun fetchAllFeeds(urls: List<RSSFeed>, ctx: Context): RSSFeed = coroutineScope {
         val repo = Repository.getInstance(ctx)
         val deferredFeeds = urls.mapIndexed { index, url ->
             async {
@@ -93,8 +91,8 @@ class RSSViewModel(app: Application) : AndroidViewModel(app) {
         }
         val results = deferredFeeds.awaitAll()
         val allItems = results.flatMap { channel ->
-            if (channel.channel.items.isNotEmpty() && (channel.channel.items[0].title != "Error Handler" && channel.channel.title != "Error Handler") && !channel.hiddenFromAll) {
-                channel.channel.items
+            if (channel.channel != null && channel.channel!!.items.isNotEmpty() && (channel.channel!!.items[0].title != "Error Handler" && channel.channel!!.title != "Error Handler") && !channel.hiddenFromAll) {
+                channel.channel!!.items
             } else {
                 emptyList()
             }
@@ -129,8 +127,6 @@ class RSSViewModel(app: Application) : AndroidViewModel(app) {
         isPlaying = ctrl.isPlaying
         duration = ctrl.duration.coerceAtLeast(0L)
         mediaMetadata = ctrl.mediaMetadata
-        repeatMode = ctrl.repeatMode
-        shuffleModeEnabled = ctrl.shuffleModeEnabled
     }
 
     suspend fun pollPosition() {

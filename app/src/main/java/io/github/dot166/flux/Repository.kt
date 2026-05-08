@@ -2,7 +2,6 @@ package io.github.dot166.flux
 
 import android.content.Context
 import android.content.SharedPreferences
-import android.util.Log
 import androidx.annotation.OptIn
 import androidx.core.content.edit
 import androidx.core.net.toUri
@@ -14,6 +13,9 @@ import androidx.preference.PreferenceManager
 import com.prof18.rssparser.RssParserBuilder
 import com.prof18.rssparser.model.RssChannel
 import com.prof18.rssparser.model.RssItem
+import io.github.dot166.jlib.RSSFeed
+import io.github.dot166.jlib.app.LocalSharedPrefsManager
+import io.github.dot166.jlib.utils.DateUtils
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
@@ -23,6 +25,7 @@ class Repository private constructor(context: Context) {
 
     private val appContext = context.applicationContext
     private val feedCache = mutableMapOf<String, RSSFeed>()
+    private val store = LocalSharedPrefsManager(context)
 
     companion object {
         @Volatile private var instance: Repository? = null
@@ -33,11 +36,16 @@ class Repository private constructor(context: Context) {
             }
     }
 
-    fun getFeedUrls(): List<String> {
-        return PreferenceManager.getDefaultSharedPreferences(appContext).getString("RssUrls", "")!!.split(";")
+    fun getFeeds(): MutableList<RSSFeed> {
+        return store.getRssFeeds()
     }
 
-    suspend fun fetchFeed(urlString: String): RSSFeed {
+    fun saveFeeds(list: MutableList<RSSFeed>) {
+        store.saveRssFeeds(list)
+    }
+
+    suspend fun fetchFeed(feed: RSSFeed): RSSFeed {
+        val urlString = feed.url
         val parser = RssParserBuilder().build()
         var channel = try {
             parser.getRssChannel(urlString)
@@ -80,27 +88,26 @@ class Repository private constructor(context: Context) {
             }.reversed()
         )
         channel = channel.recreateWithNewItems(items)
-        val excludeList = PreferenceManager.getDefaultSharedPreferences(appContext).getString("ExcludedRssUrls", "")!!.split(";")
-        val feed = RSSFeed(false, urlString, channel, excludeList.contains(urlString))
+        val feed = feed.populate(channel)
         feedCache[urlString] = feed
         return feed
     }
 
     @OptIn(UnstableApi::class)
     suspend fun getPodcasts(): List<MediaItem> = coroutineScope {
-        val urls = getFeedUrls()
+        val urls = getFeeds()
 
         val feeds = urls.map { url ->
             async { fetchFeed(url) }
         }.awaitAll()
 
-        feeds.filter { it.channel.itunesChannelData != null }.map { feed ->
+        feeds.filter { it.channel != null && it.channel!!.itunesChannelData != null }.map { feed ->
             MediaItem.Builder()
-                .setMediaId("podcast:${feed.channel.title}")
+                .setMediaId("podcast:${feed.channel!!.title}")
                 .setMediaMetadata(
                     MediaMetadata.Builder()
-                        .setTitle(feed.channel.title)
-                        .setArtworkUri(feed.channel.itunesChannelData!!.image!!.toUri())
+                        .setTitle(feed.channel!!.title)
+                        .setArtworkUri(feed.channel!!.itunesChannelData!!.image!!.toUri())
                         .setIsBrowsable(true)
                         .setIsPlayable(false)
                         .build()
@@ -111,20 +118,23 @@ class Repository private constructor(context: Context) {
 
     @OptIn(UnstableApi::class)
     fun getPodcastEpisodes(podcastTitle: String): List<MediaItem> {
-        val urls = getFeedUrls()
+        val feeds = getFeeds()
         val list = mutableListOf<MediaItem>()
-        for (url in urls) {
-            val feed = feedCache[url] ?: continue
-            if (feed.channel.itunesChannelData == null) {
+        for (url in feeds) {
+            val feed = feedCache[url.url] ?: continue
+            if (feed.channel == null) {
+                continue
+            }
+            if (feed.channel!!.itunesChannelData == null) {
                 continue
             }
 
-            if (feed.channel.title != podcastTitle) {
+            if (feed.channel!!.title != podcastTitle) {
                 continue
             }
 
-            for (i in 0 until feed.channel.items.size) {
-                val episode = feed.channel.items[(feed.channel.items.size-1)-i]
+            for (i in 0 until feed.channel!!.items.size) {
+                val episode = feed.channel!!.items[(feed.channel!!.items.size-1)-i]
                 if (episode.itunesItemData == null) {
                     continue
                 }
@@ -135,12 +145,12 @@ class Repository private constructor(context: Context) {
                     continue
                 }
                 val item = MediaItem.Builder()
-                    .setMediaId("episode:${feed.channel.title}:$i")
+                    .setMediaId("episode:${feed.channel!!.title}:$i")
                     .setUri(episode.rawEnclosure!!.url)
                     .setMediaMetadata(
                         MediaMetadata.Builder()
                             .setTitle(episode.title)
-                            .setArtist(feed.channel.title)
+                            .setArtist(feed.channel!!.title)
                             .setArtworkUri(episode.itunesItemData!!.image!!.toUri())
                             .setIsBrowsable(false)
                             .setIsPlayable(true)
@@ -159,16 +169,19 @@ class Repository private constructor(context: Context) {
 
     @OptIn(UnstableApi::class)
     fun searchPodcastEpisodes(query: String): List<MediaItem>? {
-        val urls = getFeedUrls()
+        val urls = getFeeds()
         val list = mutableListOf<MediaItem>()
         for (url in urls) {
-            val feed = feedCache[url] ?: continue
-            if (feed.channel.itunesChannelData == null) {
+            val feed = feedCache[url.url] ?: continue
+            if (feed.channel == null) {
                 continue
             }
-            for (i in 0 until feed.channel.items.size) {
-                val episode = feed.channel.items[(feed.channel.items.size-1)-i]
-                if ("${feed.channel.title}:$i" != query) {
+            if (feed.channel!!.itunesChannelData == null) {
+                continue
+            }
+            for (i in 0 until feed.channel!!.items.size) {
+                val episode = feed.channel!!.items[(feed.channel!!.items.size-1)-i]
+                if ("${feed.channel!!.title}:$i" != query) {
                     continue
                 }
                 if (episode.itunesItemData == null) {
@@ -181,12 +194,12 @@ class Repository private constructor(context: Context) {
                     continue
                 }
                 val item = MediaItem.Builder()
-                    .setMediaId("episode:${feed.channel.title}:$i")
+                    .setMediaId("episode:${feed.channel!!.title}:$i")
                     .setUri(episode.rawEnclosure!!.url)
                     .setMediaMetadata(
                         MediaMetadata.Builder()
                             .setTitle(episode.title)
-                            .setArtist(feed.channel.title)
+                            .setArtist(feed.channel!!.title)
                             .setArtworkUri(episode.itunesItemData!!.image!!.toUri())
                             .setIsBrowsable(false)
                             .setIsPlayable(true)
@@ -204,14 +217,17 @@ class Repository private constructor(context: Context) {
 
     @OptIn(UnstableApi::class)
     fun searchPodcastEpisodesByUrl(query: String): Pair<List<MediaItem>, Int>? {
-        val urls = getFeedUrls()
+        val urls = getFeeds()
         for (url in urls) {
-            val feed = feedCache[url] ?: continue
-            if (feed.channel.itunesChannelData == null) {
+            val feed = feedCache[url.url] ?: continue
+            if (feed.channel == null) {
                 continue
             }
-            for (i in 0 until feed.channel.items.size) {
-                val episode = feed.channel.items[(feed.channel.items.size-1)-i]
+            if (feed.channel!!.itunesChannelData == null) {
+                continue
+            }
+            for (i in 0 until feed.channel!!.items.size) {
+                val episode = feed.channel!!.items[(feed.channel!!.items.size-1)-i]
                 if (episode.itunesItemData == null) {
                     continue
                 }
@@ -224,9 +240,9 @@ class Repository private constructor(context: Context) {
                 if (!episode.rawEnclosure!!.type!!.contains("audio")) {
                     continue
                 }
-                val allEps = getPodcastEpisodes(feed.channel.title!!)
+                val allEps = getPodcastEpisodes(feed.channel!!.title!!)
                 for (j in 0 until allEps.size) {
-                    if (allEps[j].mediaId != "episode:${feed.channel.title}:$i") {
+                    if (allEps[j].mediaId != "episode:${feed.channel!!.title}:$i") {
                         continue
                     }
                     return Pair(allEps, j)
@@ -241,7 +257,7 @@ class Repository private constructor(context: Context) {
         val podcast = prefs.getString("podcast", null) ?: return@coroutineScope null
         val index = prefs.getInt("queue_index", 0)
         val position = prefs.getLong("episode_${podcast}_${index}_position", 0)
-        val urls = getFeedUrls()
+        val urls = getFeeds()
         urls.map { url ->
             async { fetchFeed(url) }
         }.awaitAll()
@@ -257,17 +273,17 @@ fun Player.saveQueue(prefs: SharedPreferences, mediaItems: List<MediaItem>) {
     prefs.edit {
         putString("podcast", mediaItems[0].mediaMetadata.artist?.toString())
         putInt("queue_index", currentMediaItemIndex)
-        if (currentPosition != duration) {
-            putLong(
-                "episode_${mediaItems[0].mediaMetadata.station?.toString()}_${currentMediaItemIndex}_position",
-                currentPosition
-            )
-        } else {
-            remove("episode_${mediaItems[0].mediaMetadata.station?.toString()}_${currentMediaItemIndex}_position")
-        }
+        putLong(
+            "episode_${mediaItems[0].mediaMetadata.station?.toString()}_${currentMediaItemIndex}_position",
+            currentPosition
+        )
     }
 }
 
 fun RssChannel.recreateWithNewItems(items: MutableList<RssItem>): RssChannel {
     return RssChannel(title, link, description, image, lastBuildDate, updatePeriod, items, itunesChannelData, youtubeChannelData)
+}
+
+fun RSSFeed.populate(channel: RssChannel): RSSFeed {
+    return RSSFeed(isAll, url, channel, hiddenFromAll)
 }

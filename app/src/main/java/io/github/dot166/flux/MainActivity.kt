@@ -71,13 +71,17 @@ import androidx.media3.common.util.UnstableApi
 import androidx.preference.PreferenceManager
 import coil.compose.SubcomposeAsyncImage
 import com.google.accompanist.drawablepainter.rememberDrawablePainter
-import io.github.dot166.flux.DateUtils.formatTime
 import io.github.dot166.flux.URLUtils.fixTwitterHtml
 import io.github.dot166.flux.URLUtils.hasHtmlTags
 import io.github.dot166.flux.URLUtils.isDescRendererFeed
 import io.github.dot166.flux.URLUtils.toSafeString
+import io.github.dot166.jlib.RSSFeed
 import io.github.dot166.jlib.app.SettingsLibAlertDialogBuilder
+import io.github.dot166.jlib.app.SettingsLibComposeTheme
 import io.github.dot166.jlib.app.jActivity
+import io.github.dot166.jlib.time.ReminderItem
+import io.github.dot166.jlib.utils.DateUtils
+import io.github.dot166.jlib.utils.DateUtils.formatTime
 import kotlinx.coroutines.launch
 import java.io.File
 import java.net.URI
@@ -136,7 +140,7 @@ class MainActivity: jActivity() {
         val reminderItem = ReminderItem(cal.getTimeInMillis(), 1)
         RSSAlarmScheduler(this).schedule(reminderItem)
         setContent {
-            AppTheme {
+            SettingsLibComposeTheme {
                 val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
                 val scope = rememberCoroutineScope()
                 val viewModel: RSSViewModel = viewModel()
@@ -151,7 +155,7 @@ class MainActivity: jActivity() {
                             LazyColumn(Modifier.fillMaxSize()) {
                                 items(list.toSortedList()) {
                                     NavigationDrawerItem(
-                                        label = { Text(text = it.channel.title!!) },
+                                        label = { Text(text = it.channel!!.title!!) },
                                         icon = {
                                             if (it.isAll) {
                                                 Image(
@@ -174,8 +178,8 @@ class MainActivity: jActivity() {
                                                     uriNoPath = URI.create("bbc.co.uk")
                                                 }
 
-                                                val photoUrl = if (it.channel.image != null) {
-                                                    it.channel.image!!.url
+                                                val photoUrl = if (it.channel!!.image != null) {
+                                                    it.channel!!.image!!.url
                                                 } else {
                                                     "https://www.google.com/s2/favicons?domain=${uriNoPath}"
                                                 }
@@ -204,7 +208,7 @@ class MainActivity: jActivity() {
                                             if (it.isAll) {
                                                 viewModel.refreshAll(this@MainActivity)
                                             } else {
-                                                viewModel.refresh(it.url, this@MainActivity)
+                                                viewModel.refresh(it, this@MainActivity)
                                             }
                                         }
                                     )
@@ -223,8 +227,8 @@ class MainActivity: jActivity() {
                         topBar = {
                             TopAppBar(
                                 title = {
-                                    if (data != null && data.channel.title != null) {
-                                        Text(text = data.channel.title!!)
+                                    if (data != null && data.channel!!.title != null) {
+                                        Text(text = data.channel!!.title!!)
                                     } else {
                                         Text(text = stringResource(R.string.loading))
                                     }
@@ -372,7 +376,7 @@ class MainActivity: jActivity() {
                                     Text(text = stringResource(R.string.loading))
                                 } else {
                                     LazyColumn(Modifier.fillMaxSize()) {
-                                        items(data!!.channel.items) {
+                                        items(data!!.channel!!.items) {
                                             ListItem({
                                                 ElevatedCard(
                                                     elevation = CardDefaults.cardElevation(

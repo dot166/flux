@@ -4,6 +4,7 @@ import android.app.AlarmManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import io.github.dot166.jlib.time.ReminderItem
 
 class RSSAlarmScheduler(private val context: Context) {
 

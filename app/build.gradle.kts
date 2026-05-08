@@ -25,7 +25,11 @@ android {
         }
     }
     namespace = "io.github.dot166.flux"
-    compileSdk = 36
+    compileSdk {
+        version = release(36) {
+            minorApiLevel = 1
+        }
+    }
 
     defaultConfig {
         applicationId = "io.github.dot166.flux"
@@ -68,7 +72,6 @@ dependencies {
     implementation(libs.coil.compose)
     implementation(libs.accompanist.drawablepainter)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
-    implementation(libs.androidx.ui)
     implementation(libs.kotlinx.coroutines.guava)
     implementation(libs.glide)
     annotationProcessor(libs.compiler)
