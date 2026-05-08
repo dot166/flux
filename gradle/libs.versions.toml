@@ -1,7 +1,7 @@
 [versions]
 accompanistDrawablepainter = "0.37.3"
 activityCompose = "1.13.0"
-agp = "9.2.0"
+agp = "9.2.1"
 coilCompose = "2.7.0"
 compose = "2.3.21"
 glide = "5.0.7"
