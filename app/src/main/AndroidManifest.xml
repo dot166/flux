@@ -34,6 +34,15 @@
         </activity>
         <activity android:name="io.github.dot166.flux.RSSUrlsPreferenceActivity" />
         <activity android:name="io.github.dot166.flux.AudioShim" android:exported="true" />
+        <activity-alias
+            android:name=".MinusOneActivity"
+            android:exported="true"
+            android:targetActivity=".MainActivity">
+            <intent-filter>
+                <action android:name="io.github.dot166.nexus.WINDOW_OVERLAY_PROVIDER"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+            </intent-filter>
+        </activity-alias>
 
         <service
             android:name=".RssAudioService"
