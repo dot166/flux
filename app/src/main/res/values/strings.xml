@@ -34,4 +34,6 @@
     <string name="settings_notif_dialog">The Notification permission is required to notify you of new feed items, Please allow notification permission from settings</string>
     <string name="notif_dialog">The Notification permission is required to notify you of new feed items, would you like to grant it</string>
     <string name="notification_permission">Notification Permission</string>
+    <string name="click_to_listen">Click to listen</string>
+    <string name="click_to_read">Click to read</string>
 </resources>

@@ -35,7 +35,7 @@ android {
         applicationId = "io.github.dot166.flux"
         minSdk = 31
         targetSdk = 36
-        versionCode = 2
+        versionCode = 3
         versionName = versionCode.toString()
     }
 
@@ -49,6 +49,9 @@ android {
             if (useKeystoreProperties) {
                 signingConfig = signingConfigs.getByName("release")
             }
+        }
+        debug {
+            applicationIdSuffix = ".DEV"
         }
     }
     compileOptions {

@@ -84,6 +84,16 @@ class RSSNotifier(
                                     intent2.setData(webpage)
                                     intent2
                                 }
+                            } else if (articles[0].link != null && !articles[0].link!!.isEmpty() && !isDescRendererFeed(
+                                    articles[0].link!!
+                                )
+                            ) {
+                                val webpage = articles[0].link!!.toSafeString().toUri()
+                                val intent = CustomTabsIntent.Builder()
+                                    .build()
+                                val intent2 = intent.intent
+                                intent2.setData(webpage)
+                                intent2
                             } else if (articles[0].content != null && !articles[0].content!!.isEmpty()) {
                                 val encodedHtml = fixTwitterHtml(
                                     articles[0].content!!,
@@ -105,16 +115,6 @@ class RSSNotifier(
                                 customTabsIntent.intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
                                 val intent2 = customTabsIntent.intent
                                 intent2.setData(uri)
-                                intent2
-                            } else if (articles[0].link != null && !articles[0].link!!.isEmpty() && !isDescRendererFeed(
-                                    articles[0].link!!
-                                )
-                            ) {
-                                val webpage = articles[0].link!!.toSafeString().toUri()
-                                val intent = CustomTabsIntent.Builder()
-                                    .build()
-                                val intent2 = intent.intent
-                                intent2.setData(webpage)
                                 intent2
                             } else if (articles[0].description != null && !articles[0].description!!.isBlank()) {
                                 val encodedHtml = fixTwitterHtml(
@@ -144,7 +144,11 @@ class RSSNotifier(
                         val notification =
                             NotificationCompat.Builder(context, notificationChannelId)
                                 .setContentTitle(rssChannel.channel!!.title + " - " + articles[0].title)
-                                .setContentText(articles[0].description)
+                                .setContentText(
+                                    if (articles[0].itunesItemData != null) context.getString(
+                                        R.string.click_to_listen
+                                    ) else context.getString(R.string.click_to_read)
+                                )
                                 .setSmallIcon(R.drawable.outline_rss_feed_24)
                                 .setAutoCancel(true)
                                 .setContentIntent(
