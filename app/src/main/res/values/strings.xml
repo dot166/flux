@@ -36,4 +36,8 @@
     <string name="notification_permission">Notification Permission</string>
     <string name="click_to_listen">Click to listen</string>
     <string name="click_to_read">Click to read</string>
+    <string name="import_jlib_preferences">Import jLib preferences</string>
+    <string name="export_jlib_preferences">Export jLib preferences</string>
+    <string name="import_app_preferences">Import app Preferences</string>
+    <string name="export_app_preferences">Export app preferences</string>
 </resources>

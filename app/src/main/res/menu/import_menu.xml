@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item android:title="@string/import_jlib_preferences" android:id="@+id/import_xml_jlib" />
+
+    <item android:title="@string/export_jlib_preferences" android:id="@+id/export_xml_jlib" />
+
+    <item android:title="@string/import_app_preferences" android:id="@+id/import_xml_app" />
+
+    <item android:title="@string/export_app_preferences" android:id="@+id/export_xml_app" />
+</menu>

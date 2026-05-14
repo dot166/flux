@@ -35,7 +35,7 @@ android {
         applicationId = "io.github.dot166.flux"
         minSdk = 31
         targetSdk = 36
-        versionCode = 4
+        versionCode = 5
         versionName = versionCode.toString()
     }
 
