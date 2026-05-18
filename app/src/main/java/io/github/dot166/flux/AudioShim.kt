@@ -14,6 +14,9 @@ import io.github.dot166.jlib.app.jActivity
 class AudioShim: jActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        if (intent.extras == null || intent.extras!!.getString("url") == null) {
+            finish()
+        }
         val repo = Repository.getInstance(this)
         startService(Intent(this, RssAudioService::class.java))
         val token = SessionToken(this, ComponentName(this, RssAudioService::class.java))

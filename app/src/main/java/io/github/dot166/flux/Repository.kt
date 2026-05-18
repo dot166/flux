@@ -1,7 +1,9 @@
 package io.github.dot166.flux
 
+import android.content.ContentResolver
 import android.content.Context
 import android.content.SharedPreferences
+import android.net.Uri
 import androidx.annotation.OptIn
 import androidx.core.content.edit
 import androidx.core.net.toUri
@@ -107,7 +109,7 @@ class Repository private constructor(context: Context) {
                 .setMediaMetadata(
                     MediaMetadata.Builder()
                         .setTitle(feed.channel!!.title)
-                        .setArtworkUri(feed.channel!!.itunesChannelData!!.image!!.toUri())
+                        .setArtworkUri(getPodcastArtwork(feed.channel!!))
                         .setIsBrowsable(true)
                         .setIsPlayable(false)
                         .build()
@@ -151,7 +153,7 @@ class Repository private constructor(context: Context) {
                         MediaMetadata.Builder()
                             .setTitle(episode.title)
                             .setArtist(feed.channel!!.title)
-                            .setArtworkUri(episode.itunesItemData!!.image!!.toUri())
+                            .setArtworkUri(getPodcastEpisodeArtwork(feed.channel!!, episode))
                             .setIsBrowsable(false)
                             .setIsPlayable(true)
                             .setMediaType(MediaMetadata.MEDIA_TYPE_PODCAST)
@@ -200,7 +202,7 @@ class Repository private constructor(context: Context) {
                         MediaMetadata.Builder()
                             .setTitle(episode.title)
                             .setArtist(feed.channel!!.title)
-                            .setArtworkUri(episode.itunesItemData!!.image!!.toUri())
+                            .setArtworkUri(getPodcastEpisodeArtwork(feed.channel!!, episode))
                             .setIsBrowsable(false)
                             .setIsPlayable(true)
                             .setMediaType(MediaMetadata.MEDIA_TYPE_PODCAST)
@@ -266,6 +268,28 @@ class Repository private constructor(context: Context) {
         if (items.isEmpty()) return@coroutineScope null
 
         PlaybackState(items, index, position)
+    }
+
+    fun getPodcastArtwork(feed: RssChannel): Uri {
+        return if (feed.itunesChannelData != null && feed.itunesChannelData!!.image != null) {
+            feed.itunesChannelData!!.image!!.toUri()
+        } else if (feed.image != null && feed.image!!.url != null) {
+            feed.image!!.url!!.toUri()
+        } else {
+            // oh shit, we don't have an image, try and pass in the default cover and hope it works
+            "${ContentResolver.SCHEME_ANDROID_RESOURCE}://${appContext.packageName}/${R.drawable.def_art}".toUri()
+        }
+    }
+
+    fun getPodcastEpisodeArtwork(feed: RssChannel, episode: RssItem): Uri {
+        return if (episode.itunesItemData != null && episode.itunesItemData!!.image != null) {
+            episode.itunesItemData!!.image!!.toUri()
+        } else if (episode.image != null) {
+            episode.image!!.toUri()
+        } else {
+            // oh shit, we don't have an image for that episode, use the podcasts image
+            getPodcastArtwork(feed)
+        }
     }
 }
 
