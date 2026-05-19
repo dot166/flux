@@ -299,7 +299,7 @@ fun Player.saveQueue(prefs: SharedPreferences, mediaItems: List<MediaItem>) {
         putString("podcast", mediaItems[0].mediaMetadata.artist?.toString())
         putInt("queue_index", currentMediaItemIndex)
         putLong(
-            "episode_${mediaItems[0].mediaMetadata.station?.toString()}_${currentMediaItemIndex}_position",
+            "episode_${mediaItems[0].mediaMetadata.artist?.toString()}_${currentMediaItemIndex}_position",
             currentPosition
         )
     }

@@ -170,7 +170,7 @@ class MinusOneActivity: jActivity() {
                                                                     PreferenceManager.getDefaultSharedPreferences(
                                                                         this@MinusOneActivity
                                                                     ).getLong(
-                                                                        "episode_${items.first[0].mediaMetadata.station?.toString()}_${items.second}_position",
+                                                                        "episode_${items.first[0].mediaMetadata.artist?.toString()}_${items.second}_position",
                                                                         0
                                                                     )
                                                                 )

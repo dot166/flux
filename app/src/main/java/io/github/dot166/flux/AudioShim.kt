@@ -32,7 +32,7 @@ class AudioShim: jActivity() {
                 PreferenceManager.getDefaultSharedPreferences(
                     this
                 ).getLong(
-                    "episode_${items.first[0].mediaMetadata.station?.toString()}_${items.second}_position",
+                    "episode_${items.first[0].mediaMetadata.artist?.toString()}_${items.second}_position",
                     0
                 )
             )
