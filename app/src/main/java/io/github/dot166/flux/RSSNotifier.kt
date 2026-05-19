@@ -52,9 +52,9 @@ class RSSNotifier(
                     }
                     val articles: List<RssItem> = rssChannel.channel!!.items
 
-                    val savedRssUrl: String = PreferenceManager.getDefaultSharedPreferences(context)
-                        .getString("lastRssUrl-" + feed.url, "")!!
-                    if (savedRssUrl != articles[0].link) {
+                    val savedRssItem: Int = PreferenceManager.getDefaultSharedPreferences(context)
+                        .getInt("lastRssItem-" + feed.url, 0)
+                    if (savedRssItem != articles[0].hashCode()) {
                         val channel = NotificationChannel(
                             notificationChannelId,
                             notificationChannelName,
@@ -165,7 +165,7 @@ class RSSNotifier(
                             notification
                         )
                         PreferenceManager.getDefaultSharedPreferences(context).edit {
-                            putString("lastRssUrl-" + feed.url, articles[0].link)
+                            putInt("lastRssItem-" + feed.url, articles[0].hashCode())
                         }
                     }
                 }
