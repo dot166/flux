@@ -14,6 +14,7 @@ import androidx.appcompat.content.res.AppCompatResources
 import androidx.browser.customtabs.CustomTabsIntent
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -307,13 +308,21 @@ class MainActivity: jActivity() {
                                     text = viewModel.mediaMetadata.title?.toString()
                                         ?: stringResource(
                                             R.string.unknown
-                                        ), style = MaterialTheme.typography.headlineMedium
+                                        ), style = MaterialTheme.typography.headlineMedium,
+                                    maxLines = 1,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .basicMarquee(iterations = Int.MAX_VALUE)
                                 )
                                 Text(
                                     text = viewModel.mediaMetadata.artist?.toString()
                                         ?: stringResource(
                                             R.string.unknown
-                                        ), style = MaterialTheme.typography.bodyLarge
+                                        ), style = MaterialTheme.typography.bodyLarge,
+                                    maxLines = 1,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .basicMarquee(iterations = Int.MAX_VALUE)
                                 )
 
                                 Spacer(modifier = Modifier.height(32.dp))

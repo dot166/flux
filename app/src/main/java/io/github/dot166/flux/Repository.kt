@@ -15,6 +15,7 @@ import androidx.preference.PreferenceManager
 import com.prof18.rssparser.RssParserBuilder
 import com.prof18.rssparser.model.RssChannel
 import com.prof18.rssparser.model.RssItem
+import io.github.dot166.flux.NHKHandler.buildCorrected
 import io.github.dot166.jlib.RSSFeed
 import io.github.dot166.jlib.app.LocalSharedPrefsManager
 import io.github.dot166.jlib.utils.DateUtils
@@ -159,7 +160,7 @@ class Repository private constructor(context: Context) {
                             .setMediaType(MediaMetadata.MEDIA_TYPE_PODCAST)
                             .build()
                     )
-                    .build()
+                    .buildCorrected(episode, url.url)
                 list.add(item)
             }
         }
@@ -208,7 +209,7 @@ class Repository private constructor(context: Context) {
                             .setMediaType(MediaMetadata.MEDIA_TYPE_PODCAST)
                             .build()
                     )
-                    .build()
+                    .buildCorrected(episode, url.url)
                 list.add(item)
             }
         }
