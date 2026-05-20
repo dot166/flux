@@ -340,7 +340,8 @@ class MainActivity: jActivity() {
                                 )
 
                                 Row(
-                                    modifier = Modifier.fillMaxWidth(),
+                                    modifier = Modifier.fillMaxWidth()
+                                        .padding(24.dp),
                                     horizontalArrangement = Arrangement.SpaceBetween
                                 ) {
                                     Text(formatTime(viewModel.currentPosition))
