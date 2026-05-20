@@ -338,10 +338,12 @@ class Repository private constructor(context: Context) {
         GlobalScope.future {
             val list = mutableListOf("RssUrls", "ExcludedRssUrls") // start the list with preferences that need to be migrated or app preferences that can stay
             for (i in 0 until feeds.size) {
-                val feed = fetchFeed(feeds[i]).channel!!
-                val episodes = getPodcastEpisodes(feed.title!!)
+                val feed = fetchFeed(feeds[i])
+                val episodes = getPodcastEpisodes(feed.channel!!.title!!)
+                list.add("lastRssItem-" + feed.url)
                 for (j in 0 until episodes.size) {
-                    list.add("episode_${feed.title!!}_${getPodcastEpisodeHashCode(feed.title!!, j)}_position")
+                    list.add("episode_${feed.channel!!.title!!}_${getPodcastEpisodeHashCode(feed.channel!!.title!!, j)}_position")
+                    list.add("lastRssItem-" + feed.url)
                 }
             }
             val keys = prefs.all.keys
