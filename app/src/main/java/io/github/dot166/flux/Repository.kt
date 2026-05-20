@@ -19,9 +19,12 @@ import io.github.dot166.flux.NHKHandler.buildCorrected
 import io.github.dot166.jlib.RSSFeed
 import io.github.dot166.jlib.app.LocalSharedPrefsManager
 import io.github.dot166.jlib.utils.DateUtils
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.future.future
 import kotlin.collections.ifEmpty
 
 class Repository private constructor(context: Context) {
@@ -219,7 +222,7 @@ class Repository private constructor(context: Context) {
     }
 
     @OptIn(UnstableApi::class)
-    fun searchPodcastEpisodesByUrl(query: String): Pair<List<MediaItem>, Int>? {
+    fun searchPodcastEpisodesByUrl(query: String): Triple<List<MediaItem>, Int, Int>? {
         val urls = getFeeds()
         for (url in urls) {
             val feed = feedCache[url.url] ?: continue
@@ -248,18 +251,52 @@ class Repository private constructor(context: Context) {
                     if (allEps[j].mediaId != "episode:${feed.channel!!.title}:$i") {
                         continue
                     }
-                    return Pair(allEps, j)
+                    return Triple(allEps, j, episode.hashCode())
                 }
             }
         }
         return null
     }
 
+    @OptIn(UnstableApi::class)
+    fun getPodcastEpisodeHashCode(podcastTitle: String, index: Int): Int {
+        val feeds = getFeeds()
+        for (url in feeds) {
+            val feed = feedCache[url.url] ?: continue
+            if (feed.channel == null) {
+                continue
+            }
+            if (feed.channel!!.itunesChannelData == null) {
+                continue
+            }
+
+            if (feed.channel!!.title != podcastTitle) {
+                continue
+            }
+
+            for (i in 0 until feed.channel!!.items.size) {
+                val episode = feed.channel!!.items[(feed.channel!!.items.size-1)-i]
+                if (episode.itunesItemData == null) {
+                    continue
+                }
+                if (episode.rawEnclosure == null) {
+                    continue
+                }
+                if (!episode.rawEnclosure!!.type!!.contains("audio")) {
+                    continue
+                }
+                if (i == index) {
+                    return episode.hashCode()
+                }
+            }
+        }
+        return 0
+    }
+
     suspend fun getRestoredPlaybackState(): PlaybackState? = coroutineScope {
         val prefs = PreferenceManager.getDefaultSharedPreferences(appContext)
         val podcast = prefs.getString("podcast", null) ?: return@coroutineScope null
         val index = prefs.getInt("queue_index", 0)
-        val position = prefs.getLong("episode_${podcast}_${index}_position", 0)
         val urls = getFeeds()
         urls.map { url ->
             async { fetchFeed(url) }
@@ -267,6 +304,7 @@ class Repository private constructor(context: Context) {
 
         val items = getPodcastEpisodes(podcast)
         if (items.isEmpty()) return@coroutineScope null
+        val position = prefs.getLong("episode_${podcast}_${getPodcastEpisodeHashCode(podcast, index)}_position", 0)
 
         PlaybackState(items, index, position)
     }
@@ -292,14 +330,41 @@ class Repository private constructor(context: Context) {
             getPodcastArtwork(feed)
         }
     }
+
+    @kotlin.OptIn(DelicateCoroutinesApi::class)
+    fun cleanupSavedPositions() {
+        val feeds = getFeeds()
+        val prefs = PreferenceManager.getDefaultSharedPreferences(appContext)
+        GlobalScope.future {
+            val list = mutableListOf("RssUrls", "ExcludedRssUrls") // start the list with preferences that need to be migrated or app preferences that can stay
+            for (i in 0 until feeds.size) {
+                val feed = fetchFeed(feeds[i]).channel!!
+                val episodes = getPodcastEpisodes(feed.title!!)
+                for (j in 0 until episodes.size) {
+                    list.add("episode_${feed.title!!}_${getPodcastEpisodeHashCode(feed.title!!, j)}_position")
+                }
+            }
+            val keys = prefs.all.keys
+            for (key in keys) {
+                if (!list.contains(key)) {
+                    prefs.edit { remove(key) }
+                }
+            }
+        }
+    }
 }
 
-fun Player.saveQueue(prefs: SharedPreferences, mediaItems: List<MediaItem>) {
+fun Player.saveQueue(prefs: SharedPreferences, mediaItems: List<MediaItem>, repo: Repository) {
     prefs.edit {
-        putString("podcast", mediaItems[0].mediaMetadata.artist?.toString())
+        putString("podcast", mediaItems[currentMediaItemIndex].mediaMetadata.artist?.toString())
         putInt("queue_index", currentMediaItemIndex)
         putLong(
-            "episode_${mediaItems[0].mediaMetadata.artist?.toString()}_${currentMediaItemIndex}_position",
+            "episode_${mediaItems[currentMediaItemIndex].mediaMetadata.artist?.toString()}_${
+                repo.getPodcastEpisodeHashCode(
+                    mediaItems[currentMediaItemIndex].mediaMetadata.artist?.toString()!!,
+                    currentMediaItemIndex
+                )
+            }_position",
             currentPosition
         )
     }

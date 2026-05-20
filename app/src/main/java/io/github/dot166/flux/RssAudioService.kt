@@ -47,6 +47,8 @@ class RssAudioService : MediaLibraryService() {
 
         val repository = Repository.getInstance(this)
 
+        repository.cleanupSavedPositions()
+
         val audioAttributes = AudioAttributes.Builder()
             .setUsage(C.USAGE_MEDIA)
             .setContentType(C.AUDIO_CONTENT_TYPE_SPEECH)
@@ -71,7 +73,7 @@ class RssAudioService : MediaLibraryService() {
 
         player.addListener(object: Player.Listener {
             override fun onMediaItemTransition(item: MediaItem?, reason: Int) {
-                player.saveQueue(PreferenceManager.getDefaultSharedPreferences(this@RssAudioService), savedMediaItems)
+                player.saveQueue(PreferenceManager.getDefaultSharedPreferences(this@RssAudioService), savedMediaItems, repository)
             }
 
             override fun onMediaMetadataChanged(mediaMetadata: MediaMetadata) {
@@ -79,7 +81,7 @@ class RssAudioService : MediaLibraryService() {
             }
 
             override fun onIsPlayingChanged(isPlaying: Boolean) {
-                player.saveQueue(PreferenceManager.getDefaultSharedPreferences(this@RssAudioService), savedMediaItems)
+                player.saveQueue(PreferenceManager.getDefaultSharedPreferences(this@RssAudioService), savedMediaItems, repository)
                 updateWidget()
             }
         })

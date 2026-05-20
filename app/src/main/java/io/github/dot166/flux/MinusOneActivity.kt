@@ -14,9 +14,9 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
@@ -53,7 +53,8 @@ import io.github.dot166.jlib.app.jActivity
 import io.github.dot166.jlib.time.ReminderItem
 import io.github.dot166.jlib.utils.DateUtils
 import java.io.File
-import java.util.Calendar
+import java.time.ZonedDateTime
+import java.time.temporal.ChronoUnit
 
 class MinusOneActivity: jActivity() {
     lateinit var notificationPermissionLauncher: ActivityResultLauncher<String>
@@ -97,12 +98,11 @@ class MinusOneActivity: jActivity() {
         }
         val repo = Repository.getInstance(this)
         startService(Intent(this, RssAudioService::class.java))
-        val cal: Calendar = Calendar.getInstance()
-        cal.set(Calendar.HOUR_OF_DAY, cal.get(Calendar.HOUR_OF_DAY) + 1)
-        cal.set(Calendar.MINUTE, 0)
-        cal.set(Calendar.SECOND, 0)
-        cal.set(Calendar.MILLISECOND, 0)
-        val reminderItem = ReminderItem(cal.getTimeInMillis(), 1)
+        val now = ZonedDateTime.now()
+        val minutesToNextInterval = 15 - (now.minute % 15)
+        val nextTrigger = now.plusMinutes(minutesToNextInterval.toLong())
+            .truncatedTo(ChronoUnit.MINUTES)
+        val reminderItem = ReminderItem(nextTrigger.toInstant().toEpochMilli(), 1)
         RSSAlarmScheduler(this).schedule(reminderItem)
         setContent {
             SettingsLibComposeTheme {
@@ -154,7 +154,7 @@ class MinusOneActivity: jActivity() {
                                                     ),
                                                     modifier = Modifier
                                                         .fillMaxWidth()
-                                                        .heightIn(100.dp, 500.dp),
+                                                        .wrapContentHeight(),
                                                     onClick = {
                                                         if (it.rawEnclosure != null && it.rawEnclosure!!.url != null && !it.rawEnclosure!!.url!!.isEmpty()) {
                                                             if (it.rawEnclosure!!.type != null && it.rawEnclosure!!.type!!.contains(
@@ -170,11 +170,14 @@ class MinusOneActivity: jActivity() {
                                                                     PreferenceManager.getDefaultSharedPreferences(
                                                                         this@MinusOneActivity
                                                                     ).getLong(
-                                                                        "episode_${items.first[0].mediaMetadata.artist?.toString()}_${items.second}_position",
+                                                                        "episode_${items.first[items.second].mediaMetadata.artist?.toString()}_${items.third}_position",
                                                                         0
                                                                     )
                                                                 )
                                                                 viewModel.controller!!.prepare()
+                                                                if (viewModel.controller!!.currentPosition >= viewModel.controller!!.duration) {
+                                                                    viewModel.controller!!.seekTo(0)
+                                                                }
                                                                 viewModel.controller!!.play()
                                                             } else {
                                                                 val webpage =
@@ -268,6 +271,7 @@ class MinusOneActivity: jActivity() {
                                                     Column(
                                                         modifier = Modifier
                                                             .fillMaxWidth()
+                                                            .wrapContentHeight()
                                                             .padding(10.dp)
                                                     ) {
                                                         val imageUrl = it.image

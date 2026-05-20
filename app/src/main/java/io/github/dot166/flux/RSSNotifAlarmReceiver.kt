@@ -5,9 +5,12 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.util.Log
+import io.github.dot166.jlib.time.ReminderItem
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.future.future
+import java.time.ZonedDateTime
+import java.time.temporal.ChronoUnit
 
 class RSSNotifAlarmReceiver : BroadcastReceiver() {
     @OptIn(DelicateCoroutinesApi::class)
@@ -19,11 +22,14 @@ class RSSNotifAlarmReceiver : BroadcastReceiver() {
                 Log.i("RSS", "notif")
                 val notificationManager =
                     context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-                val rssNotifier = RSSNotifier(notificationManager, context)
-                GlobalScope.future {
-                    rssNotifier.showNotification()
-                }.get()
+                RSSNotifier(notificationManager, context).showNotification()
             }
+            val now = ZonedDateTime.now()
+            val minutesToNextInterval = 15 - (now.minute % 15)
+            val nextTrigger = now.plusMinutes(minutesToNextInterval.toLong())
+                .truncatedTo(ChronoUnit.MINUTES)
+            val reminderItem = ReminderItem(nextTrigger.toInstant().toEpochMilli(), 1)
+            RSSAlarmScheduler(context).schedule(reminderItem)
         }
     }
 }
