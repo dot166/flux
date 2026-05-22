@@ -16,6 +16,7 @@ import androidx.media3.session.SessionToken
 import com.google.common.util.concurrent.MoreExecutors
 import com.prof18.rssparser.model.RssChannel
 import io.github.dot166.jlib.RSSFeed
+import io.github.dot166.jlib.compose.model.MediaViewModel
 import io.github.dot166.jlib.utils.DateUtils
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -29,18 +30,18 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
-class RSSViewModel(app: Application) : AndroidViewModel(app) {
+class RSSViewModel(app: Application) : AndroidViewModel(app), MediaViewModel {
+    override val isRss = true
     private val refreshingFlow = MutableStateFlow(true)
     private val flow = MutableStateFlow<RSSFeed?>(null)
     private val listFlow = MutableStateFlow<MutableMap<Int, RSSFeed?>>(mutableMapOf())
 
-    var controller by mutableStateOf<MediaController?>(null)
-        private set
+    override var controller by mutableStateOf<Player?>(null)
 
-    var currentPosition by mutableLongStateOf(0L)
-    var duration by mutableLongStateOf(0L)
-    var isPlaying by mutableStateOf(false)
-    var mediaMetadata by mutableStateOf(MediaMetadata.EMPTY)
+    override var currentPosition by mutableLongStateOf(0L)
+    override var duration by mutableLongStateOf(0L)
+    override var isPlaying by mutableStateOf(false)
+    override var mediaMetadata by mutableStateOf(MediaMetadata.EMPTY)
 
     init {
         refreshAll(app)
@@ -106,7 +107,7 @@ class RSSViewModel(app: Application) : AndroidViewModel(app) {
         RSSFeed(true, "", channel, false)
     }
 
-    fun connectController(context: Context) {
+    override fun connectController(context: Context) {
         val token = SessionToken(context, ComponentName(context, RssAudioService::class.java))
         val future = MediaController.Builder(context, token).buildAsync()
 
@@ -129,12 +130,19 @@ class RSSViewModel(app: Application) : AndroidViewModel(app) {
         mediaMetadata = ctrl.mediaMetadata
     }
 
-    suspend fun pollPosition() {
+    override suspend fun pollPosition() {
         while (true) {
             controller?.let {
                 currentPosition = it.currentPosition
             }
             delay(500)
         }
+    }
+    override fun toggleRepeatMode() {
+        // unsupported
+    }
+
+    override fun toggleShuffleMode() {
+        // unsupported
     }
 }

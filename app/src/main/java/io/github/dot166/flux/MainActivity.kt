@@ -14,33 +14,21 @@ import androidx.appcompat.content.res.AppCompatResources
 import androidx.browser.customtabs.CustomTabsIntent
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.basicMarquee
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.FastForward
-import androidx.compose.material.icons.filled.FastRewind
 import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material.icons.filled.Pause
-import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material3.BottomSheetDefaults
-import androidx.compose.material3.BottomSheetScaffold
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
@@ -49,7 +37,6 @@ import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.NavigationDrawerItem
 import androidx.compose.material3.SheetValue
-import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
@@ -57,18 +44,15 @@ import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.material3.rememberStandardBottomSheetState
 import androidx.compose.material3.surfaceColorAtElevation
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
 import androidx.core.net.toUri
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.preference.PreferenceManager
 import coil.compose.SubcomposeAsyncImage
@@ -81,9 +65,9 @@ import io.github.dot166.jlib.RSSFeed
 import io.github.dot166.jlib.app.SettingsLibAlertDialogBuilder
 import io.github.dot166.jlib.app.SettingsLibComposeTheme
 import io.github.dot166.jlib.app.jActivity
+import io.github.dot166.jlib.compose.MediaBottomSheetScaffold
 import io.github.dot166.jlib.time.ReminderItem
 import io.github.dot166.jlib.utils.DateUtils
-import io.github.dot166.jlib.utils.DateUtils.formatTime
 import kotlinx.coroutines.launch
 import java.io.File
 import java.net.URI
@@ -224,7 +208,9 @@ class MainActivity: jActivity() {
                             initialValue = SheetValue.PartiallyExpanded
                         )
                     )
-                    BottomSheetScaffold(
+                    MediaBottomSheetScaffold(
+                        viewModel = viewModel,
+                        context = this@MainActivity,
                         scaffoldState = scaffoldState,
                         topBar = {
                             TopAppBar(
@@ -273,112 +259,6 @@ class MainActivity: jActivity() {
                                 }
                             )
                         },
-                        sheetPeekHeight = 80.dp,
-                        sheetContent = {
-                            val controller = viewModel.controller
-
-                            LaunchedEffect(Unit) {
-                                viewModel.connectController(this@MainActivity)
-                                viewModel.pollPosition()
-                            }
-
-                            Column(
-                                modifier = Modifier
-                                    .fillMaxSize(),
-                                horizontalAlignment = Alignment.CenterHorizontally,
-                                verticalArrangement = Arrangement.Center
-                            ) {
-                                val artUrl = viewModel.mediaMetadata.artworkUri
-                                if (artUrl != null) {
-                                    SubcomposeAsyncImage(
-                                        model = artUrl,
-                                        contentDescription = stringResource(R.string.podcast_cover_art),
-                                        modifier = Modifier
-                                            .size(300.dp)
-                                            .background(
-                                                MaterialTheme.colorScheme.surfaceColorAtElevation(
-                                                    3.dp
-                                                )
-                                            )
-                                    )
-                                }
-
-                                Spacer(modifier = Modifier.height(16.dp))
-
-                                Text(
-                                    text = viewModel.mediaMetadata.title?.toString()
-                                        ?: stringResource(
-                                            R.string.unknown
-                                        ), style = MaterialTheme.typography.headlineMedium,
-                                    maxLines = 1,
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .basicMarquee(iterations = Int.MAX_VALUE)
-                                        .padding(horizontal = 24.dp)
-                                )
-                                Text(
-                                    text = viewModel.mediaMetadata.artist?.toString()
-                                        ?: stringResource(
-                                            R.string.unknown
-                                        ), style = MaterialTheme.typography.bodyLarge,
-                                    maxLines = 1,
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .basicMarquee(iterations = Int.MAX_VALUE)
-                                        .padding(horizontal = 24.dp)
-                                )
-
-                                Spacer(modifier = Modifier.height(32.dp))
-
-                                Slider(
-                                    value = viewModel.currentPosition.toFloat(),
-                                    valueRange = 0f..viewModel.duration.toFloat().coerceAtLeast(1f),
-                                    onValueChange = { controller?.seekTo(it.toLong()) },
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(24.dp)
-                                )
-
-                                Row(
-                                    modifier = Modifier.fillMaxWidth()
-                                        .padding(horizontal = 24.dp),
-                                    horizontalArrangement = Arrangement.SpaceBetween
-                                ) {
-                                    Text(formatTime(viewModel.currentPosition))
-                                    Text(formatTime(viewModel.duration))
-                                }
-
-                                Row(verticalAlignment = Alignment.CenterVertically) {
-                                    IconButton(onClick = { controller?.seekBack() }) {
-                                        Icon(
-                                            Icons.Default.FastRewind,
-                                            stringResource(R.string.rewind)
-                                        )
-                                    }
-
-                                    FilledIconButton(
-                                        onClick = { if (viewModel.isPlaying) controller?.pause() else { if (controller?.playbackState == Player.STATE_ENDED) {
-                                            controller.seekTo(0)
-                                            controller.play()
-                                        } else controller?.play()} },
-                                        modifier = Modifier.size(64.dp)
-                                    ) {
-                                        Icon(
-                                            if (viewModel.isPlaying) Icons.Default.Pause else Icons.Default.PlayArrow,
-                                            stringResource(R.string.play_pause)
-                                        )
-                                    }
-
-                                    IconButton(onClick = { controller?.seekForward() }) {
-                                        Icon(
-                                            Icons.Default.FastForward,
-                                            stringResource(R.string.fast_forward)
-                                        )
-                                    }
-                                }
-                            }
-                        },
-                        sheetDragHandle = { BottomSheetDefaults.DragHandle() }
                     ) { innerPadding ->
                         Column(
                             modifier = Modifier
