@@ -35,7 +35,6 @@
             </intent-filter>
         </activity>
         <activity android:name="io.github.dot166.flux.RSSUrlsPreferenceActivity" />
-        <activity android:name="io.github.dot166.flux.AudioShim" android:exported="true" />
         <activity
             android:name=".MinusOneActivity"
             android:exported="true"

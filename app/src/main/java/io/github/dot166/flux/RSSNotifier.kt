@@ -67,7 +67,7 @@ class RSSNotifier(
                                         "audio"
                                     )
                                 ) {
-                                    val intent = Intent(context, AudioShim::class.java)
+                                    val intent = Intent(context, MainActivity::class.java)
                                     intent.putExtra(
                                         "url",
                                         article.rawEnclosure!!.url!!

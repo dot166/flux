@@ -1,14 +1,12 @@
 package io.github.dot166.flux
 
 import android.Manifest
-import android.app.NotificationManager
-import android.content.Context
+import android.content.ComponentName
 import android.content.Intent
 import android.graphics.drawable.Drawable
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
-import android.util.Log
 import androidx.activity.compose.setContent
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts.RequestPermission
@@ -49,10 +47,14 @@ import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.media3.common.util.UnstableApi
+import androidx.media3.session.MediaController
+import androidx.media3.session.SessionToken
 import coil.compose.SubcomposeAsyncImage
 import com.android.settingslib.spa.framework.theme.SettingsTheme
 import com.google.accompanist.drawablepainter.rememberDrawablePainter
+import com.google.common.util.concurrent.MoreExecutors
 import io.github.dot166.jlib.RSSFeed
+import io.github.dot166.jlib.app.DefaultSharedPrefsManager
 import io.github.dot166.jlib.app.PreferenceMainActivity
 import io.github.dot166.jlib.app.SettingsLibAlertDialogBuilder
 import io.github.dot166.jlib.app.jActivity
@@ -107,17 +109,40 @@ class MainActivity: jActivity() {
             notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
         }
         val repo = Repository.getInstance(this)
-        startService(Intent(this, RssAudioService::class.java))
+        if (intent.extras != null && intent.extras!!.getString("url") != null) {
+            val intent = Intent(this, RssAudioService::class.java).apply {
+                putExtra("EXTRA_SHIM_CALLED", true)
+            }
+            startService(intent)
+            val token = SessionToken(this, ComponentName(this, RssAudioService::class.java))
+            val future = MediaController.Builder(this, token).buildAsync()
+            future.addListener({
+                val ctrl = future.get()
+                val items =
+                    repo.searchPodcastEpisodesByUrl(
+                        intent.extras!!.getString("url")!!
+                    )!!
+                ctrl.setMediaItems(
+                    items.first, items.second,
+                    DefaultSharedPrefsManager.getSharedPreferencesStorage(this).getLong(
+                        "episode_${items.first[items.second].mediaMetadata.artist?.toString()}_${items.third}_position"
+                    ) ?: 0
+                )
+                ctrl.prepare()
+                if (ctrl.currentPosition >= ctrl.duration) {
+                    ctrl.seekTo(0)
+                }
+                ctrl.play()
+            }, MoreExecutors.directExecutor())
+        } else {
+            startService(Intent(this, RssAudioService::class.java)) // start service normally
+        }
         val now = ZonedDateTime.now()
         val minutesToNextInterval = 15 - (now.minute % 15)
         val nextTrigger = now.plusMinutes(minutesToNextInterval.toLong())
             .truncatedTo(ChronoUnit.MINUTES)
         val reminderItem = ReminderItem(nextTrigger.toInstant().toEpochMilli(), 1)
         RSSAlarmScheduler(this).schedule(reminderItem)
-        Log.i("RSS", "notif")
-        val notificationManager =
-            getSystemService(NOTIFICATION_SERVICE) as NotificationManager
-        RSSNotifier(notificationManager, this).showNotification()
         setContent {
             SettingsTheme {
                 val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)

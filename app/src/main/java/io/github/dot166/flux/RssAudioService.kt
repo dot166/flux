@@ -4,11 +4,9 @@ import android.app.PendingIntent
 import android.appwidget.AppWidgetManager
 import android.content.ComponentName
 import android.content.Intent
-import android.graphics.BitmapFactory
 import android.util.Log
 import android.widget.RemoteViews
 import androidx.annotation.OptIn
-import androidx.core.content.edit
 import androidx.media3.common.AudioAttributes
 import androidx.media3.common.C
 import androidx.media3.common.MediaItem
@@ -20,15 +18,14 @@ import androidx.media3.session.LibraryResult
 import androidx.media3.session.MediaLibraryService
 import androidx.media3.session.MediaSession
 import androidx.media3.session.SessionError
-import androidx.preference.PreferenceManager
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.target.AppWidgetTarget
 import com.google.common.collect.ImmutableList
 import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.ListenableFuture
+import io.github.dot166.jlib.app.DefaultSharedPrefsManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.guava.future
 import kotlinx.coroutines.launch
@@ -41,6 +38,7 @@ class RssAudioService : MediaLibraryService() {
     private lateinit var savedMediaItems: List<MediaItem>
     private val job = SupervisorJob()
     private val scope = CoroutineScope(Dispatchers.Main + job)
+    private var restoreAllowed = false
 
     override fun onCreate() {
         super.onCreate()
@@ -60,20 +58,24 @@ class RssAudioService : MediaLibraryService() {
             .setSeekForwardIncrementMs(10000)
             .build()
         scope.launch {
-            val state = withContext(Dispatchers.IO) {
-                repository.getRestoredPlaybackState()
-            }
+            if (!restoreAllowed) {
+                val state = withContext(Dispatchers.IO) {
+                    repository.getRestoredPlaybackState()
+                }
 
-            state?.let { (items, index, position) ->
-                savedMediaItems = items
-                player.setMediaItems(items, index, position)
-                player.prepare()
+                state?.let { (items, index, position) ->
+                    savedMediaItems = items
+                    player.setMediaItems(items, index, position)
+                    player.prepare()
+                }
+            } else {
+                restoreAllowed = false
             }
         }
 
         player.addListener(object: Player.Listener {
             override fun onMediaItemTransition(item: MediaItem?, reason: Int) {
-                player.saveQueue(PreferenceManager.getDefaultSharedPreferences(this@RssAudioService), savedMediaItems, repository)
+                player.saveQueue(DefaultSharedPrefsManager.getSharedPreferencesStorage(this@RssAudioService), savedMediaItems, repository)
             }
 
             override fun onMediaMetadataChanged(mediaMetadata: MediaMetadata) {
@@ -81,7 +83,7 @@ class RssAudioService : MediaLibraryService() {
             }
 
             override fun onIsPlayingChanged(isPlaying: Boolean) {
-                player.saveQueue(PreferenceManager.getDefaultSharedPreferences(this@RssAudioService), savedMediaItems, repository)
+                player.saveQueue(DefaultSharedPrefsManager.getSharedPreferencesStorage(this@RssAudioService), savedMediaItems, repository)
                 updateWidget()
             }
         })
@@ -211,6 +213,9 @@ class RssAudioService : MediaLibraryService() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        if (intent != null && intent.getBooleanExtra("EXTRA_SHIM_CALLED", false)) {
+            restoreAllowed = true
+        }
         when (intent?.action) {
             "ACTION_TOGGLE_PLAY_PAUSE" -> {
                 when {
@@ -226,17 +231,17 @@ class RssAudioService : MediaLibraryService() {
                     }
                 }
                 updateWidget()
-                return START_STICKY;
+                return START_STICKY
             }
             "ACTION_FAST_FORWARD" -> {
                 player.seekForward()
                 updateWidget()
-                return START_STICKY;
+                return START_STICKY
             }
             "ACTION_REWIND" -> {
                 player.seekBack()
                 updateWidget()
-                return START_STICKY;
+                return START_STICKY
             }
             "ACTION_START_ACTIVITY" -> {
                 startActivity(Intent(this, MainActivity::class.java))

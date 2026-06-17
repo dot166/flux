@@ -2,7 +2,6 @@ package io.github.dot166.flux
 
 import android.content.ContentResolver
 import android.content.Context
-import android.content.SharedPreferences
 import android.net.Uri
 import androidx.annotation.OptIn
 import androidx.core.content.edit
@@ -11,12 +10,13 @@ import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
-import androidx.preference.PreferenceManager
+import com.android.settingslib.datastore.SharedPreferencesStorage
 import com.prof18.rssparser.RssParserBuilder
 import com.prof18.rssparser.model.RssChannel
 import com.prof18.rssparser.model.RssItem
 import io.github.dot166.flux.HandlerUtils.create
 import io.github.dot166.jlib.RSSFeed
+import io.github.dot166.jlib.app.DefaultSharedPrefsManager
 import io.github.dot166.jlib.app.LocalSharedPrefsManager
 import io.github.dot166.jlib.utils.DateUtils
 import kotlinx.coroutines.DelicateCoroutinesApi
@@ -25,7 +25,6 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.future.future
-import kotlin.collections.ifEmpty
 
 class Repository private constructor(context: Context) {
 
@@ -319,9 +318,9 @@ class Repository private constructor(context: Context) {
     }
 
     suspend fun getRestoredPlaybackState(): PlaybackState? = coroutineScope {
-        val prefs = PreferenceManager.getDefaultSharedPreferences(appContext)
-        val podcast = prefs.getString("podcast", null) ?: return@coroutineScope null
-        val index = prefs.getInt("queue_index", 0)
+        val prefs = DefaultSharedPrefsManager.getSharedPreferencesStorage(appContext)
+        val podcast = prefs.getString("podcast") ?: return@coroutineScope null
+        val index = prefs.getInt("queue_index") ?: 0
         val urls = getFeeds()
         urls.map { url ->
             async { fetchFeed(url) }
@@ -329,7 +328,7 @@ class Repository private constructor(context: Context) {
 
         val items = getPodcastEpisodes(podcast)
         if (items.isEmpty()) return@coroutineScope null
-        val position = prefs.getLong("episode_${podcast}_${getPodcastEpisodeHashCode(podcast, index)}_position", 0)
+        val position = prefs.getLong("episode_${podcast}_${getPodcastEpisodeHashCode(podcast, index)}_position") ?: 0
 
         PlaybackState(items, index, position)
     }
@@ -359,7 +358,7 @@ class Repository private constructor(context: Context) {
     @kotlin.OptIn(DelicateCoroutinesApi::class)
     fun cleanupSavedPositions() {
         val feeds = getFeeds()
-        val prefs = PreferenceManager.getDefaultSharedPreferences(appContext)
+        val prefs = DefaultSharedPrefsManager.getSharedPreferencesStorage(appContext).sharedPreferences // needs sharedpref functions I have not abstracted yet
         GlobalScope.future {
             val list = mutableListOf("RssUrls", "ExcludedRssUrls", "podcast", "queue_index", "notified")
             for (i in feeds.indices) {
@@ -400,11 +399,11 @@ class Repository private constructor(context: Context) {
     }
 }
 
-fun Player.saveQueue(prefs: SharedPreferences, mediaItems: List<MediaItem>, repo: Repository) {
-    prefs.edit {
-        putString("podcast", mediaItems[currentMediaItemIndex].mediaMetadata.artist?.toString())
-        putInt("queue_index", currentMediaItemIndex)
-        putLong(
+fun Player.saveQueue(prefs: SharedPreferencesStorage, mediaItems: List<MediaItem>, repo: Repository) {
+    prefs.apply {
+        setString("podcast", mediaItems[currentMediaItemIndex].mediaMetadata.artist?.toString())
+        setInt("queue_index", currentMediaItemIndex)
+        setLong(
             "episode_${mediaItems[currentMediaItemIndex].mediaMetadata.artist?.toString()}_${
                 repo.getPodcastEpisodeHashCode(
                     mediaItems[currentMediaItemIndex].mediaMetadata.artist?.toString()!!,

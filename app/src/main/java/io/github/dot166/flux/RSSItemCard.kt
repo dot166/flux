@@ -24,13 +24,13 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
 import androidx.core.net.toUri
-import androidx.preference.PreferenceManager
 import coil.compose.SubcomposeAsyncImage
 import com.prof18.rssparser.model.RssItem
 import io.github.dot166.flux.URLUtils.fixTwitterHtml
 import io.github.dot166.flux.URLUtils.hasHtmlTags
 import io.github.dot166.flux.URLUtils.isDescRendererFeed
 import io.github.dot166.flux.URLUtils.toSafeString
+import io.github.dot166.jlib.app.DefaultSharedPrefsManager
 import io.github.dot166.jlib.utils.DateUtils
 import java.io.File
 
@@ -62,12 +62,9 @@ fun RSSItemCard(it: RssItem, repo: Repository, viewModel: RSSViewModel, ctx: Con
                                 )!!
                             viewModel.controller!!.setMediaItems(
                                 items.first, items.second,
-                                PreferenceManager.getDefaultSharedPreferences(
-                                    ctx
-                                ).getLong(
+                                DefaultSharedPrefsManager.getSharedPreferencesStorage(ctx).getLong(
                                     "episode_${items.first[items.second].mediaMetadata.artist?.toString()}_${items.third}_position",
-                                    0
-                                )
+                                ) ?: 0
                             )
                             viewModel.controller!!.prepare()
                             if (viewModel.controller!!.currentPosition >= viewModel.controller!!.duration) {
