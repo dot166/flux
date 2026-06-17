@@ -15,7 +15,7 @@ import androidx.preference.PreferenceManager
 import com.prof18.rssparser.RssParserBuilder
 import com.prof18.rssparser.model.RssChannel
 import com.prof18.rssparser.model.RssItem
-import io.github.dot166.flux.NHKHandler.buildCorrected
+import io.github.dot166.flux.HandlerUtils.create
 import io.github.dot166.jlib.RSSFeed
 import io.github.dot166.jlib.app.LocalSharedPrefsManager
 import io.github.dot166.jlib.utils.DateUtils
@@ -30,7 +30,7 @@ import kotlin.collections.ifEmpty
 class Repository private constructor(context: Context) {
 
     private val appContext = context.applicationContext
-    private val feedCache = mutableMapOf<String, RSSFeed>()
+    private var feedCache = mutableMapOf<String, RSSFeed>()
     private val store = LocalSharedPrefsManager(context)
 
     companion object {
@@ -47,42 +47,27 @@ class Repository private constructor(context: Context) {
     }
 
     fun saveFeeds(list: MutableList<RSSFeed>) {
+        for (feed in list) {
+            if (feed.channel != null) {
+                if (feed.channel!!.title == "Error Handler" && feed.channel!!.items[0].title == "Error Handler") {
+                    feed.populate(null) // do not allow error handler to be cached, always set to null
+                }
+            }
+        }
         store.saveRssFeeds(list)
     }
 
     suspend fun fetchFeed(feed: RSSFeed): RSSFeed {
         val urlString = feed.url
+        if (!feedCache.containsKey(urlString)) {
+            feedCache[urlString] = feed // init cache with feed that was cached to disk
+        }
         val parser = RssParserBuilder().build()
         var channel = try {
             parser.getRssChannel(urlString)
         } catch (e: Exception) {
-            val list: MutableList<RssItem> = ArrayList()
-            list.add(
-                RssItem(
-                    null,
-                    "Error Handler",
-                    null,
-                    null,
-                    null,
-                    e.message,
-                    e.message + e.stackTrace.contentToString().replace(", ", "\n"),
-                    null,
-                    null,
-                    null,
-                    "flux",
-                    null,
-                    mutableListOf(),
-                    null,
-                    null,
-                    null,
-                    null,
-                    null
-                )
-            )
-            RssChannel(
-                "Error Handler", null, null, null, null, null,
-                list, null, null
-            )
+            e.printStackTrace()
+            feedCache[urlString]?.channel ?: genErrorHandler(Exception(e))
         }
         val items = mutableListOf<RssItem>()
         items.addAll(channel.items)
@@ -96,7 +81,47 @@ class Repository private constructor(context: Context) {
         channel = channel.recreateWithNewItems(items)
         val feed = feed.populate(channel)
         feedCache[urlString] = feed
+        saveFeeds(feedCache.toMutableList())
         return feed
+    }
+
+    private fun MutableMap<String, RSSFeed>.toMutableList(): MutableList<RSSFeed> {
+        val list = mutableListOf<RSSFeed>()
+        for (i in values.indices) {
+            list.add(values.toList()[i])
+        }
+        return list
+    }
+
+
+        fun genErrorHandler(e: Throwable): RssChannel {
+        val list: MutableList<RssItem> = ArrayList()
+        list.add(
+            RssItem(
+                null,
+                "Error Handler",
+                null,
+                null,
+                null,
+                e.message,
+                e.message + e.stackTrace.contentToString().replace(", ", "\n"),
+                null,
+                null,
+                null,
+                "flux",
+                null,
+                mutableListOf(),
+                null,
+                null,
+                null,
+                null,
+                null
+            )
+        )
+        return RssChannel(
+            "Error Handler", null, null, null, null, null,
+            list, null, null
+        )
     }
 
     @OptIn(UnstableApi::class)
@@ -139,7 +164,7 @@ class Repository private constructor(context: Context) {
                 continue
             }
 
-            for (i in 0 until feed.channel!!.items.size) {
+            for (i in feed.channel!!.items.indices) {
                 val episode = feed.channel!!.items[(feed.channel!!.items.size-1)-i]
                 if (episode.itunesItemData == null) {
                     continue
@@ -163,7 +188,7 @@ class Repository private constructor(context: Context) {
                             .setMediaType(MediaMetadata.MEDIA_TYPE_PODCAST)
                             .build()
                     )
-                    .buildCorrected(episode, url.url)
+                    .create(episode, url.url)
                 list.add(item)
             }
         }
@@ -185,7 +210,7 @@ class Repository private constructor(context: Context) {
             if (feed.channel!!.itunesChannelData == null) {
                 continue
             }
-            for (i in 0 until feed.channel!!.items.size) {
+            for (i in feed.channel!!.items.indices) {
                 val episode = feed.channel!!.items[(feed.channel!!.items.size-1)-i]
                 if ("${feed.channel!!.title}:$i" != query) {
                     continue
@@ -212,7 +237,7 @@ class Repository private constructor(context: Context) {
                             .setMediaType(MediaMetadata.MEDIA_TYPE_PODCAST)
                             .build()
                     )
-                    .buildCorrected(episode, url.url)
+                    .create(episode, url.url)
                 list.add(item)
             }
         }
@@ -232,7 +257,7 @@ class Repository private constructor(context: Context) {
             if (feed.channel!!.itunesChannelData == null) {
                 continue
             }
-            for (i in 0 until feed.channel!!.items.size) {
+            for (i in feed.channel!!.items.indices) {
                 val episode = feed.channel!!.items[(feed.channel!!.items.size-1)-i]
                 if (episode.itunesItemData == null) {
                     continue
@@ -247,8 +272,8 @@ class Repository private constructor(context: Context) {
                     continue
                 }
                 val allEps = getPodcastEpisodes(feed.channel!!.title!!)
-                for (j in 0 until allEps.size) {
-                    if (allEps[j].mediaId != "episode:${feed.channel!!.title}:$i") {
+                for ((j, element) in allEps.withIndex()) {
+                    if (element.mediaId != "episode:${feed.channel!!.title}:$i") {
                         continue
                     }
                     return Triple(allEps, j, episode.hashCode())
@@ -274,7 +299,7 @@ class Repository private constructor(context: Context) {
                 continue
             }
 
-            for (i in 0 until feed.channel!!.items.size) {
+            for (i in feed.channel!!.items.indices) {
                 val episode = feed.channel!!.items[(feed.channel!!.items.size-1)-i]
                 if (episode.itunesItemData == null) {
                     continue
@@ -336,14 +361,12 @@ class Repository private constructor(context: Context) {
         val feeds = getFeeds()
         val prefs = PreferenceManager.getDefaultSharedPreferences(appContext)
         GlobalScope.future {
-            val list = mutableListOf("RssUrls", "ExcludedRssUrls") // start the list with preferences that need to be migrated or app preferences that can stay
-            for (i in 0 until feeds.size) {
+            val list = mutableListOf("RssUrls", "ExcludedRssUrls", "podcast", "queue_index", "notified")
+            for (i in feeds.indices) {
                 val feed = fetchFeed(feeds[i])
                 val episodes = getPodcastEpisodes(feed.channel!!.title!!)
-                list.add("lastRssItem-" + feed.url)
-                for (j in 0 until episodes.size) {
+                for (j in episodes.indices) {
                     list.add("episode_${feed.channel!!.title!!}_${getPodcastEpisodeHashCode(feed.channel!!.title!!, j)}_position")
-                    list.add("lastRssItem-" + feed.url)
                 }
             }
             val keys = prefs.all.keys
@@ -352,6 +375,27 @@ class Repository private constructor(context: Context) {
                     prefs.edit { remove(key) }
                 }
             }
+        }
+    }
+
+    suspend fun cleanupNotified() {
+        val feeds = getFeeds()
+        for (i in feeds.indices) {
+            val feed = fetchFeed(feeds[i])
+            if (feed.channel!!.items[0].title == "Error Handler" && feed.channel!!.title == "Error Handler") {
+                continue
+            }
+            val newItems = mutableListOf<Int>()
+            for (j in feed.channel!!.items.indices) {
+                newItems.add(feed.channel!!.items[j].hashCode())
+            }
+            val notified = FeedUtils.getNotified(appContext, feed.url)
+            for (item in notified) {
+                if (!newItems.contains(item.hashCode())) {
+                    notified.remove(item)
+                }
+            }
+            FeedUtils.setItems(notified, feed.url, appContext)
         }
     }
 }
@@ -376,6 +420,6 @@ fun RssChannel.recreateWithNewItems(items: MutableList<RssItem>): RssChannel {
     return RssChannel(title, link, description, image, lastBuildDate, updatePeriod, items, itunesChannelData, youtubeChannelData)
 }
 
-fun RSSFeed.populate(channel: RssChannel): RSSFeed {
+fun RSSFeed.populate(channel: RssChannel?): RSSFeed {
     return RSSFeed(isAll, url, channel, hiddenFromAll)
 }

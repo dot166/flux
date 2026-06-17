@@ -213,7 +213,6 @@ class RssAudioService : MediaLibraryService() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         when (intent?.action) {
             "ACTION_TOGGLE_PLAY_PAUSE" -> {
-                startService(Intent(this, this::class.java))
                 when {
                     player.playbackState == Player.STATE_ENDED -> {
                         player.seekTo(0)
@@ -227,16 +226,17 @@ class RssAudioService : MediaLibraryService() {
                     }
                 }
                 updateWidget()
+                return START_STICKY;
             }
             "ACTION_FAST_FORWARD" -> {
-                startService(Intent(this, this::class.java))
                 player.seekForward()
                 updateWidget()
+                return START_STICKY;
             }
             "ACTION_REWIND" -> {
-                startService(Intent(this, this::class.java))
                 player.seekBack()
                 updateWidget()
+                return START_STICKY;
             }
             "ACTION_START_ACTIVITY" -> {
                 startActivity(Intent(this, MainActivity::class.java))

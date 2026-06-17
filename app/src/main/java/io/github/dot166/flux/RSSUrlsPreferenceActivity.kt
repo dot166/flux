@@ -36,9 +36,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogProperties
+import com.android.settingslib.spa.framework.theme.SettingsTheme
 import io.github.dot166.jlib.RSSFeed
 import io.github.dot166.jlib.app.SettingsLibComposeDialog
-import io.github.dot166.jlib.app.SettingsLibComposeTheme
 import io.github.dot166.jlib.app.jActivity
 
 class RSSUrlsPreferenceActivity: jActivity() {
@@ -46,7 +46,7 @@ class RSSUrlsPreferenceActivity: jActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            SettingsLibComposeTheme {
+            SettingsTheme {
                 val repo = Repository.getInstance(this)
                 var refreshing by remember { mutableStateOf(true) }
                 val list = repo.getFeeds()
@@ -147,10 +147,12 @@ class RSSUrlsPreferenceActivity: jActivity() {
                         }, onPositivePress = {
                             val url = text
                             val hidden = checked
+                            var index = list.size
                             if (list.containsUrl(url)) {
+                                index = list.indexOfUrl(url)
                                 list.removeUrl(url)
                             }
-                            list.addUrl(url, hidden)
+                            list.addUrl(url, hidden, index)
                             repo.saveFeeds(list)
                             refreshing = true
                             refreshing = false
@@ -212,12 +214,16 @@ class RSSUrlsPreferenceActivity: jActivity() {
         }
     }
 
-    private fun MutableList<RSSFeed>.addUrl(url: String, hidden: Boolean) {
-        add(RSSFeed(false, url, null, hidden)) // can be null as this list gets dumped to JSON and reset with the actual feeds, is never used by the RSS part
+    private fun MutableList<RSSFeed>.addUrl(url: String, hidden: Boolean, index: Int) {
+        add(index, RSSFeed(false, url, null, hidden)) // can be null as this list gets dumped to JSON and reset with the actual feeds, is never used by the RSS part
     }
 
     private fun MutableList<RSSFeed>.containsUrl(url: String): Boolean {
         return find { it.url == url } != null
+    }
+
+    private fun MutableList<RSSFeed>.indexOfUrl(url: String): Int {
+        return indexOf(find { it.url == url })
     }
 
     private fun MutableList<RSSFeed>.removeUrl(url: String) {

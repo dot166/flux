@@ -10,6 +10,8 @@
     <uses-permission android:name="android.permission.INTERNET"/>
 
     <application
+        android:name=".Application"
+        tools:replace="android:name"
         android:icon="@mipmap/ic_launcher"
         android:usesCleartextTraffic="true"
         android:label="@string/app_name"
@@ -25,7 +27,7 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
-        <activity android:name="io.github.dot166.flux.PreferenceActivity"
+        <activity android:name="io.github.dot166.jlib.app.PreferenceMainActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.APPLICATION_PREFERENCES"/>
