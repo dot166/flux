@@ -29,8 +29,8 @@ import kotlinx.coroutines.future.future
 class Repository private constructor(context: Context) {
 
     private val appContext = context.applicationContext
-    private var feedCache = mutableMapOf<String, RSSFeed>()
     private val store = LocalSharedPrefsManager(context)
+    private var feedCache = store.getRssFeedCache()
 
     companion object {
         @Volatile private var instance: Repository? = null
@@ -45,28 +45,27 @@ class Repository private constructor(context: Context) {
         return store.getRssFeeds()
     }
 
-    fun saveFeeds(list: MutableList<RSSFeed>) {
-        for (feed in list) {
-            if (feed.channel != null) {
-                if (feed.channel!!.title == "Error Handler" && feed.channel!!.items[0].title == "Error Handler") {
-                    feed.populate(null) // do not allow error handler to be cached, always set to null
-                }
+    fun updateCache(map: MutableMap<String, RssChannel>) {
+        for ((url, feed) in map) {
+            if (feed.title == "Error Handler" && feed.items[0].title == "Error Handler") {
+                map.remove(url, feed) // do not allow error handler to be cached, always omit from cache
             }
         }
+        store.saveRssFeedCache(map)
+    }
+
+    fun saveFeeds(list: MutableList<RSSFeed>) {
         store.saveRssFeeds(list)
     }
 
     suspend fun fetchFeed(feed: RSSFeed): RSSFeed {
         val urlString = feed.url
-        if (!feedCache.containsKey(urlString)) {
-            feedCache[urlString] = feed // init cache with feed that was cached to disk
-        }
         val parser = RssParserBuilder().build()
         var channel = try {
             parser.getRssChannel(urlString)
         } catch (e: Exception) {
             e.printStackTrace()
-            feedCache[urlString]?.channel ?: genErrorHandler(Exception(e))
+            feedCache[urlString] ?: genErrorHandler(Exception(e))
         }
         val items = mutableListOf<RssItem>()
         items.addAll(channel.items)
@@ -79,21 +78,13 @@ class Repository private constructor(context: Context) {
         )
         channel = channel.recreateWithNewItems(items)
         val feed = feed.populate(channel)
-        feedCache[urlString] = feed
-        saveFeeds(feedCache.toMutableList())
+        feedCache[urlString] = channel
+        updateCache(feedCache)
         return feed
     }
 
-    private fun MutableMap<String, RSSFeed>.toMutableList(): MutableList<RSSFeed> {
-        val list = mutableListOf<RSSFeed>()
-        for (i in values.indices) {
-            list.add(values.toList()[i])
-        }
-        return list
-    }
 
-
-        fun genErrorHandler(e: Throwable): RssChannel {
+    fun genErrorHandler(e: Throwable): RssChannel {
         val list: MutableList<RssItem> = ArrayList()
         list.add(
             RssItem(
@@ -152,19 +143,16 @@ class Repository private constructor(context: Context) {
         val list = mutableListOf<MediaItem>()
         for (url in feeds) {
             val feed = feedCache[url.url] ?: continue
-            if (feed.channel == null) {
-                continue
-            }
-            if (feed.channel!!.itunesChannelData == null) {
+            if (feed.itunesChannelData == null) {
                 continue
             }
 
-            if (feed.channel!!.title != podcastTitle) {
+            if (feed.title != podcastTitle) {
                 continue
             }
 
-            for (i in feed.channel!!.items.indices) {
-                val episode = feed.channel!!.items[(feed.channel!!.items.size-1)-i]
+            for (i in feed.items.indices) {
+                val episode = feed.items[(feed.items.size-1)-i]
                 if (episode.itunesItemData == null) {
                     continue
                 }
@@ -175,13 +163,13 @@ class Repository private constructor(context: Context) {
                     continue
                 }
                 val item = MediaItem.Builder()
-                    .setMediaId("episode:${feed.channel!!.title}:$i")
+                    .setMediaId("episode:${feed.title}:$i")
                     .setUri(episode.rawEnclosure!!.url)
                     .setMediaMetadata(
                         MediaMetadata.Builder()
                             .setTitle(episode.title)
-                            .setArtist(feed.channel!!.title)
-                            .setArtworkUri(getPodcastEpisodeArtwork(feed.channel!!, episode))
+                            .setArtist(feed.title)
+                            .setArtworkUri(getPodcastEpisodeArtwork(feed, episode))
                             .setIsBrowsable(false)
                             .setIsPlayable(true)
                             .setMediaType(MediaMetadata.MEDIA_TYPE_PODCAST)
@@ -203,15 +191,12 @@ class Repository private constructor(context: Context) {
         val list = mutableListOf<MediaItem>()
         for (url in urls) {
             val feed = feedCache[url.url] ?: continue
-            if (feed.channel == null) {
+            if (feed.itunesChannelData == null) {
                 continue
             }
-            if (feed.channel!!.itunesChannelData == null) {
-                continue
-            }
-            for (i in feed.channel!!.items.indices) {
-                val episode = feed.channel!!.items[(feed.channel!!.items.size-1)-i]
-                if ("${feed.channel!!.title}:$i" != query) {
+            for (i in feed.items.indices) {
+                val episode = feed.items[(feed.items.size-1)-i]
+                if ("${feed.title}:$i" != query) {
                     continue
                 }
                 if (episode.itunesItemData == null) {
@@ -224,13 +209,13 @@ class Repository private constructor(context: Context) {
                     continue
                 }
                 val item = MediaItem.Builder()
-                    .setMediaId("episode:${feed.channel!!.title}:$i")
+                    .setMediaId("episode:${feed.title}:$i")
                     .setUri(episode.rawEnclosure!!.url)
                     .setMediaMetadata(
                         MediaMetadata.Builder()
                             .setTitle(episode.title)
-                            .setArtist(feed.channel!!.title)
-                            .setArtworkUri(getPodcastEpisodeArtwork(feed.channel!!, episode))
+                            .setArtist(feed.title)
+                            .setArtworkUri(getPodcastEpisodeArtwork(feed, episode))
                             .setIsBrowsable(false)
                             .setIsPlayable(true)
                             .setMediaType(MediaMetadata.MEDIA_TYPE_PODCAST)
@@ -250,14 +235,11 @@ class Repository private constructor(context: Context) {
         val urls = getFeeds()
         for (url in urls) {
             val feed = feedCache[url.url] ?: continue
-            if (feed.channel == null) {
+            if (feed.itunesChannelData == null) {
                 continue
             }
-            if (feed.channel!!.itunesChannelData == null) {
-                continue
-            }
-            for (i in feed.channel!!.items.indices) {
-                val episode = feed.channel!!.items[(feed.channel!!.items.size-1)-i]
+            for (i in feed.items.indices) {
+                val episode = feed.items[(feed.items.size-1)-i]
                 if (episode.itunesItemData == null) {
                     continue
                 }
@@ -270,9 +252,9 @@ class Repository private constructor(context: Context) {
                 if (!episode.rawEnclosure!!.type!!.contains("audio")) {
                     continue
                 }
-                val allEps = getPodcastEpisodes(feed.channel!!.title!!)
+                val allEps = getPodcastEpisodes(feed.title!!)
                 for ((j, element) in allEps.withIndex()) {
-                    if (element.mediaId != "episode:${feed.channel!!.title}:$i") {
+                    if (element.mediaId != "episode:${feed.title}:$i") {
                         continue
                     }
                     return Triple(allEps, j, episode.hashCode())
@@ -287,19 +269,16 @@ class Repository private constructor(context: Context) {
         val feeds = getFeeds()
         for (url in feeds) {
             val feed = feedCache[url.url] ?: continue
-            if (feed.channel == null) {
-                continue
-            }
-            if (feed.channel!!.itunesChannelData == null) {
+            if (feed.itunesChannelData == null) {
                 continue
             }
 
-            if (feed.channel!!.title != podcastTitle) {
+            if (feed.title != podcastTitle) {
                 continue
             }
 
-            for (i in feed.channel!!.items.indices) {
-                val episode = feed.channel!!.items[(feed.channel!!.items.size-1)-i]
+            for (i in feed.items.indices) {
+                val episode = feed.items[(feed.items.size-1)-i]
                 if (episode.itunesItemData == null) {
                     continue
                 }

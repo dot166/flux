@@ -4,7 +4,14 @@ import android.annotation.SuppressLint
 import android.content.Intent
 import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
 import android.content.res.Configuration
+import android.net.Uri
 import android.os.Bundle
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
@@ -19,7 +26,12 @@ import com.android.settingslib.spa.widget.banner.SettingsBanner
 import com.android.settingslib.spa.widget.preference.Preference
 import com.android.settingslib.spa.widget.preference.PreferenceModel
 import com.android.settingslib.spa.widget.scaffold.HomeScaffold
+import com.android.settingslib.spa.widget.scaffold.MoreOptionsAction
+import com.android.settingslib.spa.widget.scaffold.RegularScaffold
 import com.android.settingslib.spa.widget.ui.Category
+import io.github.dot166.jlib.app.DefaultSharedPrefsManager
+import io.github.dot166.jlib.app.LocalSharedPrefsManager
+import io.github.dot166.jlib.utils.SPUtils
 
 object HomePageProvider : SettingsPageProvider {
     override val name = "Flux"
@@ -32,7 +44,60 @@ object HomePageProvider : SettingsPageProvider {
     @Composable
     override fun Page(arguments: Bundle?) {
         val title = remember { getTitle(arguments) }
-        HomeScaffold(title) {
+        val pickerOneLauncher = rememberLauncherForActivityResult(
+            contract = ActivityResultContracts.OpenDocument()
+        ) { uri: Uri? ->
+            SPUtils.importSharedPrefsFromSAF(
+                uri,
+                SpaEnvironmentFactory.instance.appContext,
+                LocalSharedPrefsManager.getSharedPreferencesStorage(SpaEnvironmentFactory.instance.appContext)
+            )
+        }
+        val pickerTwoLauncher = rememberLauncherForActivityResult(
+            contract = ActivityResultContracts.OpenDocument()
+        ) { uri: Uri? ->
+            SPUtils.exportSharedPrefsToSAF(
+                uri,
+                SpaEnvironmentFactory.instance.appContext,
+                LocalSharedPrefsManager.getSharedPreferencesStorage(SpaEnvironmentFactory.instance.appContext),
+                null
+            )
+        }
+        val pickerThreeLauncher = rememberLauncherForActivityResult(
+            contract = ActivityResultContracts.OpenDocument()
+        ) { uri: Uri? ->
+            SPUtils.importSharedPrefsFromSAF(
+                uri,
+                SpaEnvironmentFactory.instance.appContext,
+                DefaultSharedPrefsManager.getSharedPreferencesStorage(SpaEnvironmentFactory.instance.appContext)
+            )
+        }
+        val pickerFourLauncher = rememberLauncherForActivityResult(
+            contract = ActivityResultContracts.OpenDocument()
+        ) { uri: Uri? ->
+            SPUtils.exportSharedPrefsToSAF(
+                uri,
+                SpaEnvironmentFactory.instance.appContext,
+                DefaultSharedPrefsManager.getSharedPreferencesStorage(SpaEnvironmentFactory.instance.appContext),
+                null
+            )
+        }
+        RegularScaffold(title, actions = {
+            MoreOptionsAction {
+                MenuItem(stringResource(R.string.import_jlib_preferences)) {
+                    pickerOneLauncher.launch(arrayOf("text/xml"))
+                }
+                MenuItem(stringResource(R.string.export_jlib_preferences)) {
+                    pickerTwoLauncher.launch(arrayOf("text/xml"))
+                }
+                MenuItem(stringResource(R.string.import_app_preferences)) {
+                    pickerThreeLauncher.launch(arrayOf("text/xml"))
+                }
+                MenuItem(stringResource(R.string.export_app_preferences)) {
+                    pickerFourLauncher.launch(arrayOf("text/xml"))
+                }
+            }
+        }) {
             Category {
                 Preference(object : PreferenceModel {
                     override val title: String
