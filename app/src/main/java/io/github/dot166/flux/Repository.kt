@@ -45,7 +45,8 @@ class Repository private constructor(context: Context) {
         return store.getRssFeeds()
     }
 
-    fun updateCache(map: MutableMap<String, RssChannel>) {
+    fun updateCache() {
+        val map = feedCache
         for ((url, feed) in map) {
             if (feed.title == "Error Handler" && feed.items[0].title == "Error Handler") {
                 map.remove(url, feed) // do not allow error handler to be cached, always omit from cache
@@ -79,7 +80,6 @@ class Repository private constructor(context: Context) {
         channel = channel.recreateWithNewItems(items)
         val feed = feed.populate(channel)
         feedCache[urlString] = channel
-        updateCache(feedCache)
         return feed
     }
 
@@ -121,6 +121,7 @@ class Repository private constructor(context: Context) {
         val feeds = urls.map { url ->
             async { fetchFeed(url) }
         }.awaitAll()
+        updateCache()
 
         feeds.filter { it.channel != null && it.channel!!.itunesChannelData != null }.map { feed ->
             MediaItem.Builder()
@@ -304,6 +305,7 @@ class Repository private constructor(context: Context) {
         urls.map { url ->
             async { fetchFeed(url) }
         }.awaitAll()
+        updateCache()
 
         val items = getPodcastEpisodes(podcast)
         if (items.isEmpty()) return@coroutineScope null
