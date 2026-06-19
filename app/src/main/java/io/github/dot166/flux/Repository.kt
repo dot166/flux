@@ -25,12 +25,13 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.future.future
+import java.util.concurrent.ConcurrentHashMap
 
 class Repository private constructor(context: Context) {
 
     private val appContext = context.applicationContext
     private val store = LocalSharedPrefsManager(context)
-    private var feedCache = store.getRssFeedCache()
+    private var feedCache = ConcurrentHashMap(store.getRssFeedCache())
 
     companion object {
         @Volatile private var instance: Repository? = null
@@ -47,10 +48,8 @@ class Repository private constructor(context: Context) {
 
     fun updateCache() {
         val map = feedCache
-        for ((url, feed) in map) {
-            if (feed.title == "Error Handler" && feed.items[0].title == "Error Handler") {
-                map.remove(url, feed) // do not allow error handler to be cached, always omit from cache
-            }
+        map.entries.removeIf { (_, feed) ->
+            feed.title == "Error Handler" && feed.items[0].title == "Error Handler"
         }
         store.saveRssFeedCache(map)
     }
@@ -80,6 +79,7 @@ class Repository private constructor(context: Context) {
         channel = channel.recreateWithNewItems(items)
         val feed = feed.populate(channel)
         feedCache[urlString] = channel
+        updateCache()
         return feed
     }
 
@@ -121,7 +121,6 @@ class Repository private constructor(context: Context) {
         val feeds = urls.map { url ->
             async { fetchFeed(url) }
         }.awaitAll()
-        updateCache()
 
         feeds.filter { it.channel != null && it.channel!!.itunesChannelData != null }.map { feed ->
             MediaItem.Builder()
@@ -305,7 +304,6 @@ class Repository private constructor(context: Context) {
         urls.map { url ->
             async { fetchFeed(url) }
         }.awaitAll()
-        updateCache()
 
         val items = getPodcastEpisodes(podcast)
         if (items.isEmpty()) return@coroutineScope null

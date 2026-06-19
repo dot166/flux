@@ -68,7 +68,6 @@ class RSSViewModel(app: Application) : AndroidViewModel(app), MediaViewModel {
             put(0, allFeeds)
         } }
         flow.emit(listFlow.value[0])
-        repo.updateCache()
         refreshingFlow.value = false
     }
 
@@ -79,7 +78,6 @@ class RSSViewModel(app: Application) : AndroidViewModel(app), MediaViewModel {
         listFlow.update { it.toMutableMap().apply { key = filterValues { urlInReg -> urlInReg!!.url == feed.url }.keys.first() } }
         listFlow.update { it.toMutableMap().apply { put(key, repo.fetchFeed(feed)) } }
         flow.emit(listFlow.value[key])
-        repo.updateCache()
         refreshingFlow.value = false
     }
 
