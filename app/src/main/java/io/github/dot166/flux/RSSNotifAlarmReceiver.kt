@@ -7,8 +7,6 @@ import android.content.Intent
 import android.util.Log
 import io.github.dot166.jlib.time.ReminderItem
 import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.future.future
 import java.time.ZonedDateTime
 import java.time.temporal.ChronoUnit
 
