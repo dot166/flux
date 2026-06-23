@@ -47,7 +47,7 @@ object HomePageProvider : SettingsPageProvider {
             )
         }
         val pickerTwoLauncher = rememberLauncherForActivityResult(
-            contract = ActivityResultContracts.OpenDocument()
+            contract = ActivityResultContracts.CreateDocument("text/xml")
         ) { uri: Uri? ->
             SPUtils.exportSharedPrefsToSAF(
                 uri,
@@ -66,7 +66,7 @@ object HomePageProvider : SettingsPageProvider {
             )
         }
         val pickerFourLauncher = rememberLauncherForActivityResult(
-            contract = ActivityResultContracts.OpenDocument()
+            contract = ActivityResultContracts.CreateDocument("text/xml")
         ) { uri: Uri? ->
             SPUtils.exportSharedPrefsToSAF(
                 uri,
@@ -77,17 +77,18 @@ object HomePageProvider : SettingsPageProvider {
         }
         RegularScaffold(title, actions = {
             MoreOptionsAction {
+                val packageName = SpaEnvironmentFactory.instance.appContext.packageName
                 MenuItem(stringResource(R.string.import_jlib_preferences)) {
                     pickerOneLauncher.launch(arrayOf("text/xml"))
                 }
                 MenuItem(stringResource(R.string.export_jlib_preferences)) {
-                    pickerTwoLauncher.launch(arrayOf("text/xml"))
+                    pickerTwoLauncher.launch("Prefs-jLib-$packageName.xml")
                 }
                 MenuItem(stringResource(R.string.import_app_preferences)) {
                     pickerThreeLauncher.launch(arrayOf("text/xml"))
                 }
                 MenuItem(stringResource(R.string.export_app_preferences)) {
-                    pickerFourLauncher.launch(arrayOf("text/xml"))
+                    pickerFourLauncher.launch("Prefs-app-$packageName.xml")
                 }
             }
         }) {

@@ -299,7 +299,6 @@ class Repository private constructor(context: Context) {
     suspend fun getRestoredPlaybackState(): PlaybackState? = coroutineScope {
         val prefs = DefaultSharedPrefsManager.getSharedPreferencesStorage(appContext)
         val podcast = prefs.getString("podcast") ?: return@coroutineScope null
-        val index = prefs.getInt("queue_index") ?: 0
         val urls = getFeeds()
         urls.map { url ->
             async { fetchFeed(url) }
@@ -307,6 +306,10 @@ class Repository private constructor(context: Context) {
 
         val items = getPodcastEpisodes(podcast)
         if (items.isEmpty()) return@coroutineScope null
+        var index = prefs.getInt("queue_index") ?: 0
+        if (index >= items.size) {
+            index = items.size - 1
+        }
         val position = prefs.getLong("episode_${podcast}_${getPodcastEpisodeHashCode(podcast, index)}_position") ?: 0
 
         PlaybackState(items, index, position)
