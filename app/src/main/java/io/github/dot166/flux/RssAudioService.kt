@@ -269,6 +269,7 @@ class RssAudioService : MediaLibraryService() {
             val appWidgetTarget = AppWidgetTarget(this, R.id.art, views, *ids)
             Glide.with(this)
                 .asBitmap()
+                .override(500, 500)
                 .load(artBytes)
                 .into(appWidgetTarget)
         } else {
