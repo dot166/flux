@@ -26,15 +26,15 @@ android {
     }
     namespace = "io.github.dot166.flux"
     compileSdk {
-        version = release(36) {
-            minorApiLevel = 1
+        version = release(37) {
+            minorApiLevel = 0
         }
     }
 
     defaultConfig {
         applicationId = "io.github.dot166.flux"
         minSdk = 31
-        targetSdk = 36
+        targetSdk = 37
         versionCode = 20
         versionName = versionCode.toString()
     }
