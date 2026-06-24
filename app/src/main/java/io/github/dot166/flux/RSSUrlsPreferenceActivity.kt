@@ -35,10 +35,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.DialogProperties
 import com.android.settingslib.spa.framework.theme.SettingsTheme
+import com.android.settingslib.spa.widget.dialog.AlertDialogButton
+import com.android.settingslib.spa.widget.dialog.rememberDialogPresenter
 import io.github.dot166.jlib.RSSFeed
-import io.github.dot166.jlib.app.SettingsLibComposeDialog
 import io.github.dot166.jlib.app.jActivity
 
 class RSSUrlsPreferenceActivity: jActivity() {
@@ -50,10 +50,66 @@ class RSSUrlsPreferenceActivity: jActivity() {
                 val repo = Repository.getInstance(this)
                 var refreshing by remember { mutableStateOf(true) }
                 val list = repo.getFeeds()
-                var showAddDialog by remember { mutableStateOf(false) }
-                var showDeleteDialog by remember { mutableStateOf(false) }
                 var text by remember { mutableStateOf("") }
+                var initialUrl by remember { mutableStateOf("") }
                 var checked by remember { mutableStateOf(false) }
+                val deleteDialog = rememberDialogPresenter(
+                        confirmButton = AlertDialogButton(stringResource(R.string.yes), onClick = {
+                            list.removeUrl(text)
+                            repo.saveFeeds(list)
+                            refreshing = true
+                            refreshing = false
+                            text = ""
+                        }),
+                        dismissButton = AlertDialogButton(stringResource(R.string.no), onClick = { text = "" }),
+                        title = stringResource(R.string.app_name)
+                    ) {
+                        Text(stringResource(R.string.are_you_sure_you_want_to_delete, text))
+                    }
+                val addOrEditDialog = rememberDialogPresenter(
+                    confirmButton = AlertDialogButton(stringResource(android.R.string.ok), onClick = {
+                        val url = text
+                        val hidden = checked
+                        var index = list.size
+                        if (list.containsUrl(url)) {
+                            index = list.indexOfUrl(url)
+                            list.removeUrl(url)
+                        }
+                        if (initialUrl.isNotBlank() && list.containsUrl(initialUrl)) {
+                            index = list.indexOfUrl(initialUrl)
+                            list.removeUrl(initialUrl)
+                        }
+                        list.addUrl(url, hidden, index)
+                        repo.saveFeeds(list)
+                        refreshing = true
+                        refreshing = false
+                        text = ""
+                        initialUrl = ""
+                        checked = false
+                    }),
+                    dismissButton = AlertDialogButton(stringResource(android.R.string.cancel), onClick = {
+                        text = ""
+                        checked = false
+                    }),
+                    title = stringResource(R.string.app_name)
+                ) {
+                    TextField(text, {
+                        text = it
+                    })
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth(),
+                        horizontalArrangement = Arrangement.Center,
+                    ) {
+                        Text(
+                            text = stringResource(R.string.exclude_from_all_feeds_view),
+                            modifier = Modifier.padding(16.dp),
+                        )
+                        Switch(checked, {
+                            checked = it
+                        })
+                    }
+                }
                 Scaffold(
                     topBar = {
                         TopAppBar(
@@ -63,9 +119,9 @@ class RSSUrlsPreferenceActivity: jActivity() {
                             actions = {
                                 IconButton(
                                     onClick = {
-                                        showAddDialog = true
                                         text = ""
                                         checked = false
+                                        addOrEditDialog.open()
                                     }
                                 ) { Icon(Icons.Filled.Add, contentDescription = stringResource(R.string.add_feed)) }
                             },
@@ -111,9 +167,10 @@ class RSSUrlsPreferenceActivity: jActivity() {
                                                 Text(text = it.url, modifier = Modifier.widthIn(5.dp, 280.dp))
                                                 Row {
                                                     IconButton(onClick = {
-                                                        showAddDialog = true
                                                         text = it.url
+                                                        initialUrl = it.url
                                                         checked = it.hiddenFromAll
+                                                        addOrEditDialog.open()
                                                     }) {
                                                         Icon(
                                                             Icons.Default.Edit,
@@ -121,8 +178,8 @@ class RSSUrlsPreferenceActivity: jActivity() {
                                                         )
                                                     }
                                                     IconButton(onClick = {
-                                                        showDeleteDialog = true
                                                         text = it.url
+                                                        deleteDialog.open()
                                                     }) {
                                                         Icon(
                                                             Icons.Default.Delete,
@@ -135,77 +192,6 @@ class RSSUrlsPreferenceActivity: jActivity() {
                                     })
                                 }
                             }
-                        }
-                    }
-                }
-                when {
-                    showAddDialog -> {
-                        SettingsLibComposeDialog(onDismissRequest = {
-                            showAddDialog = false
-                            text = ""
-                            checked = false
-                        }, onPositivePress = {
-                            val url = text
-                            val hidden = checked
-                            var index = list.size
-                            if (list.containsUrl(url)) {
-                                index = list.indexOfUrl(url)
-                                list.removeUrl(url)
-                            }
-                            list.addUrl(url, hidden, index)
-                            repo.saveFeeds(list)
-                            refreshing = true
-                            refreshing = false
-                            showAddDialog = false
-                            text = ""
-                            checked = false
-                        }, positiveContent = {
-                            Text(stringResource(android.R.string.ok))
-                        }, onNegativePress = {
-                            showAddDialog = false
-                            text = ""
-                            checked = false
-                        }, negativeContent = {
-                            Text(stringResource(android.R.string.cancel))
-                        }, properties = DialogProperties()) {
-                            TextField(text, {
-                                text = it
-                            })
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth(),
-                                horizontalArrangement = Arrangement.Center,
-                                ) {
-                                Text(
-                                    text = stringResource(R.string.exclude_from_all_feeds_view),
-                                    modifier = Modifier.padding(16.dp),
-                                    )
-                                Switch(checked, {
-                                    checked = it
-                                })
-                            }
-                        }
-                    }
-                    showDeleteDialog -> {
-                        SettingsLibComposeDialog(onDismissRequest = {
-                            showAddDialog = false
-                            text = ""
-                        }, onPositivePress = {
-                            list.removeUrl(text)
-                            repo.saveFeeds(list)
-                            refreshing = true
-                            refreshing = false
-                            showDeleteDialog = false
-                            text = ""
-                        }, positiveContent = {
-                            Text(stringResource(R.string.yes))
-                        }, onNegativePress = {
-                            showDeleteDialog = false
-                            text = ""
-                        }, negativeContent = {
-                            Text(stringResource(R.string.no))
-                        }, properties = DialogProperties()) {
-                            Text(stringResource(R.string.are_you_sure_you_want_to_delete, text))
                         }
                     }
                 }

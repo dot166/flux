@@ -23,6 +23,10 @@ object FeedUtils {
         return cachedMap
     }
 
+    private fun setCachedFeedInfo(map: MutableMap<String, MutableList<Int>>) {
+        cachedMap = map
+    }
+
     fun setItems(notified: MutableList<Int>, url: String, context: Context) {
         val map = getCachedFeedInfo(context)
         map[url] = notified
@@ -30,6 +34,7 @@ object FeedUtils {
             .serializeNulls()
             .create()
         val json = gson.toJson(map)
+        setCachedFeedInfo(map)
         DefaultSharedPrefsManager.getSharedPreferencesStorage(context).setString("notified", json)
     }
 }

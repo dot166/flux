@@ -371,11 +371,7 @@ class Repository private constructor(context: Context) {
                 newItems.add(feed.channel!!.items[j].hashCode())
             }
             val notified = FeedUtils.getNotified(appContext, feed.url)
-            for (item in notified) {
-                if (!newItems.contains(item.hashCode())) {
-                    notified.remove(item)
-                }
-            }
+            notified.removeIf { !newItems.contains(it) }
             FeedUtils.setItems(notified, feed.url, appContext)
         }
     }
