@@ -41,6 +41,8 @@ class RSSViewModel(app: Application) : AndroidViewModel(app), MediaViewModel {
     override var currentPosition by mutableLongStateOf(0L)
     override var duration by mutableLongStateOf(0L)
     override var isPlaying by mutableStateOf(false)
+    override var shuffle = false // shuffle not supported in rss
+    override var repeat = Player.REPEAT_MODE_OFF // repeat not supported in rss
     override var mediaMetadata by mutableStateOf(MediaMetadata.EMPTY)
 
     init {
