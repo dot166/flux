@@ -52,7 +52,7 @@ class RSSNotifier(
                 val articles: List<RssItem> = rssChannel.channel!!.items
 
                 val notified = FeedUtils.getNotified(context, feed.url)
-                for (j in articles.size downTo 0) {
+                for (j in articles.size - 1 downTo 0) {
                     val article = articles[j]
                     if (!notified.contains(article.hashCode())) {
                         val channel = NotificationChannel(
