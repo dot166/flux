@@ -6,7 +6,7 @@ import android.content.SharedPreferences
 import android.database.sqlite.SQLiteConstraintException
 import android.os.Build
 import androidx.annotation.StringRes
-import com.nononsenseapps.feeder.R
+import io.github.dot166.flux.R
 import com.nononsenseapps.feeder.background.schedulePeriodicRssSync
 import com.nononsenseapps.feeder.db.room.BlocklistDao
 import com.nononsenseapps.feeder.db.room.ID_UNSET

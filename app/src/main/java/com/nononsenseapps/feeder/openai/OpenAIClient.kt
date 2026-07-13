@@ -9,7 +9,7 @@ import com.aallam.openai.api.model.Model
 import com.aallam.openai.client.LoggingConfig
 import com.aallam.openai.client.OpenAI
 import com.aallam.openai.client.OpenAIConfig
-import com.nononsenseapps.feeder.BuildConfig
+import io.github.dot166.flux.BuildConfig
 import com.nononsenseapps.feeder.archmodel.OpenAISettings
 import io.ktor.client.plugins.HttpSend
 import io.ktor.client.plugins.plugin

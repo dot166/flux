@@ -23,7 +23,7 @@ import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.nononsenseapps.feeder.R
+import io.github.dot166.flux.R
 import com.nononsenseapps.feeder.ui.compose.deletefeed.DeletableFeed
 import com.nononsenseapps.feeder.ui.compose.minimumTouchSize
 import com.nononsenseapps.feeder.ui.compose.theme.PreviewTheme

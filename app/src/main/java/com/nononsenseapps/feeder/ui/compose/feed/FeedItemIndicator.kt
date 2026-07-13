@@ -28,7 +28,7 @@ import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import coil3.size.Precision
 import coil3.size.Scale
-import com.nononsenseapps.feeder.R
+import io.github.dot166.flux.R
 import com.nononsenseapps.feeder.archmodel.ThemeOptions
 import com.nononsenseapps.feeder.ui.compose.coil.rememberTintedVectorPainter
 import com.nononsenseapps.feeder.ui.compose.theme.PreviewTheme
