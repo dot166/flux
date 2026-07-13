@@ -57,7 +57,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.aallam.openai.client.OpenAIHost
-import com.nononsenseapps.feeder.R
+import io.github.dot166.flux.R
 import com.nononsenseapps.feeder.archmodel.OpenAISettings
 import com.nononsenseapps.feeder.openai.LOCAL_TRANSLATION_PROVIDER_URL
 import com.nononsenseapps.feeder.openai.canUseAsTranslationApi

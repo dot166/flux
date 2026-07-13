@@ -60,7 +60,7 @@ import coil3.request.ImageRequest
 import coil3.size.Precision
 import coil3.size.Scale
 import coil3.size.Size
-import com.nononsenseapps.feeder.R
+import io.github.dot166.flux.R
 import com.nononsenseapps.feeder.model.html.Coordinate
 import com.nononsenseapps.feeder.model.html.LinearArticle
 import com.nononsenseapps.feeder.model.html.LinearAudio

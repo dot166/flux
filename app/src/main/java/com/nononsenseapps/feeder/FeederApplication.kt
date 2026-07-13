@@ -46,6 +46,7 @@ import com.nononsenseapps.feeder.util.currentlyUnmetered
 import com.nononsenseapps.feeder.util.filePathProvider
 import com.nononsenseapps.feeder.util.logDebug
 import com.nononsenseapps.jsonfeed.cachingHttpClient
+import io.github.dot166.flux.BuildConfig
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.withContext

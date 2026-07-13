@@ -24,7 +24,7 @@ import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
 import androidx.navigation.NavDeepLinkBuilder
-import com.nononsenseapps.feeder.R
+import io.github.dot166.flux.R
 import com.nononsenseapps.feeder.archmodel.ItemOpener
 import com.nononsenseapps.feeder.archmodel.Repository
 import com.nononsenseapps.feeder.db.COL_LINK
@@ -398,7 +398,7 @@ private fun notificationBuilder(context: Context): NotificationCompat.Builder {
 
     return NotificationCompat
         .Builder(context, CHANNEL_ID)
-        .setSmallIcon(R.drawable.ic_stat_f)
+        .setSmallIcon(R.drawable.outline_rss_feed_24)
         .setLargeIcon(bm)
         .setAutoCancel(true)
         .setCategory(NotificationCompat.CATEGORY_SOCIAL)

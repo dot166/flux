@@ -9,15 +9,15 @@ plugins {
     alias(libs.plugins.ktlint.gradle)
 }
 
-val commitCount by project.extra {
-    providers
-        .exec {
-            commandLine("git", "rev-list", "--count", "HEAD")
-        }.standardOutput.asText
-        .get()
-        .trim()
-        .toInt()
-}
+//val commitCount by project.extra {
+//    providers
+//        .exec {
+//            commandLine("git", "rev-list", "--count", "HEAD")
+//        }.standardOutput.asText
+//        .get()
+//        .trim()
+//        .toInt()
+//}
 
 val kotlinToolchainVersion =
     JavaVersion
@@ -29,17 +29,15 @@ val kotlinToolchainVersion =
         ?: 17
 
 android {
-    namespace = "com.nononsenseapps.feeder"
+    namespace = "io.github.dot166.flux"
     compileSdk =
         libs.versions.compileSdk
             .get()
             .toInt()
 
     defaultConfig {
-        applicationId = "com.nononsenseapps.feeder"
-        // The version fields are set with actual values to support F-Droid
-        // In Play variant, they are overridden and taken from git to support alpha/beta testing.
-        // For actual releases they match.
+        applicationId = "io.github.dot166.flux"
+        // Match upstream version
         versionCode = 4040
         versionName = "2.21.2"
         // TLS1.3 is enabled in Android 10 (29) and above
@@ -126,20 +124,21 @@ android {
                 signingConfig = signingConfigs.getByName("release")
             }
         }
-        // See androidComponents below for related configurations
-        flavorDimensions += "store"
-        productFlavors {
-            create("fdroid") {
-                dimension = "store"
-                // Keeping default version values for F-Droid
-            }
-            create("play") {
-                dimension = "store"
-                versionName = "2.21.2"
-                versionCode = commitCount
-                applicationIdSuffix = ".play"
-            }
-        }
+        // disable build varients, as I do not need them
+//        // See androidComponents below for related configurations
+//        flavorDimensions += "store"
+//        productFlavors {
+//            create("fdroid") {
+//                dimension = "store"
+//                // Keeping default version values for F-Droid
+//            }
+//            create("play") {
+//                dimension = "store"
+//                versionName = "2.21.2"
+//                versionCode = commitCount
+//                applicationIdSuffix = ".play"
+//            }
+//        }
     }
     testOptions {
         unitTests {
@@ -206,14 +205,15 @@ android {
     }
 }
 
-androidComponents {
-    beforeVariants { variantBuilder ->
-        if (variantBuilder.buildType == "debug") {
-            // Only allow debug build of fdroid flavor
-            variantBuilder.enable = variantBuilder.productFlavors.containsAll(listOf("store" to "fdroid"))
-        }
-    }
-}
+// disable build varients, as I do not need them
+//androidComponents {
+//    beforeVariants { variantBuilder ->
+//        if (variantBuilder.buildType == "debug") {
+//            // Only allow debug build of fdroid flavor
+//            variantBuilder.enable = variantBuilder.productFlavors.containsAll(listOf("store" to "fdroid"))
+//        }
+//    }
+//}
 
 composeCompiler {
     includeSourceInformation = true

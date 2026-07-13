@@ -2,7 +2,7 @@ package com.nononsenseapps.feeder.ui.compose.sync
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
-import com.nononsenseapps.feeder.R
+import io.github.dot166.flux.R
 import com.nononsenseapps.feeder.ui.compose.components.ConfirmDialog
 
 @Composable
