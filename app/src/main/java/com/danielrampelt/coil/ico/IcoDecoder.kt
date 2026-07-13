@@ -15,7 +15,7 @@ import coil3.request.Options
 import coil3.request.colorSpace
 import coil3.request.premultipliedAlpha
 import com.nononsenseapps.feeder.FeederApplication
-import com.nononsenseapps.feeder.R
+import io.github.dot166.flux.R
 import okio.BufferedSource
 
 private const val LOG_TAG = "FEEDER_ICO"

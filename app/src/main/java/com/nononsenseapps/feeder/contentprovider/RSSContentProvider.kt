@@ -5,7 +5,7 @@ import android.content.ContentValues
 import android.content.UriMatcher
 import android.database.Cursor
 import android.net.Uri
-import com.nononsenseapps.feeder.BuildConfig
+import io.github.dot166.flux.BuildConfig
 import com.nononsenseapps.feeder.FeederApplication
 import com.nononsenseapps.feeder.db.room.FeedDao
 import com.nononsenseapps.feeder.db.room.FeedItemDao

@@ -74,8 +74,8 @@ import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.nononsenseapps.feeder.BuildConfig
-import com.nononsenseapps.feeder.R
+import io.github.dot166.flux.BuildConfig
+import io.github.dot166.flux.R
 import com.nononsenseapps.feeder.crypto.AesCbcWithIntegrity
 import com.nononsenseapps.feeder.db.room.ID_UNSET
 import com.nononsenseapps.feeder.db.room.SyncDevice
