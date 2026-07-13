@@ -505,7 +505,7 @@ class Repository(
 
     suspend fun shouldDisplayFullTextForItemByDefault(itemId: Long): Boolean = feedItemStore.getFullTextByDefault(itemId)
 
-    suspend fun getLink(itemId: Long): String? = feedItemStore.getLink(itemId)
+    suspend fun getLink(itemId: Long): String? = feedItemStore.getLink(itemId).toSafeString()
 
     suspend fun getArticleOpener(itemId: Long): ItemOpener =
         when (feedItemStore.getArticleOpener(itemId)) {
@@ -957,4 +957,23 @@ enum class TextToDisplay {
     FAILED_MISSING_LINK,
     FAILED_NOT_HTML,
     FAILED_FULLTEXT_TOO_LARGE,
+}
+
+fun String?.toSafeString(): String? {
+    if (this == null) {
+        return this
+    }
+    val str: String? =
+        if (contains("://x.com") || contains("://www.x.com") || contains("://twitter.com") || contains("://www.twitter.com")) {
+            replace("://x.com", "://xcancel.com")
+                .replace("://www.x.com", "://xcancel.com")
+                .replace("://twitter.com", "://xcancel.com")
+                .replace("://www.twitter.com", "://xcancel.com")
+        } else if (contains("://reddit.com") || contains("://www.reddit.com")) {
+            replace("://reddit.com", "://kddit.kalli.st")
+                .replace("://www.reddit.com", "://kddit.kalli.st")
+        } else {
+            this
+        }
+    return str
 }
