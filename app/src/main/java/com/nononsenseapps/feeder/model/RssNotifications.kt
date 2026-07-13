@@ -128,7 +128,7 @@ private fun createNotificationChannel(context: Context) {
     val notificationManager: NotificationManager =
         context.getSystemService(NOTIFICATION_SERVICE) as NotificationManager
 
-    val channel = NotificationChannel(CHANNEL_ID, name, NotificationManager.IMPORTANCE_LOW)
+    val channel = NotificationChannel(CHANNEL_ID, name, NotificationManager.IMPORTANCE_DEFAULT)
     channel.description = description
 
     notificationManager.createNotificationChannel(channel)
@@ -402,7 +402,7 @@ private fun notificationBuilder(context: Context): NotificationCompat.Builder {
         .setLargeIcon(bm)
         .setAutoCancel(true)
         .setCategory(NotificationCompat.CATEGORY_SOCIAL)
-        .setPriority(NotificationCompat.PRIORITY_LOW)
+        .setPriority(NotificationCompat.PRIORITY_DEFAULT)
 }
 
 private suspend fun getItemsToNotify(di: DI): List<FeedItemWithFeed> {
