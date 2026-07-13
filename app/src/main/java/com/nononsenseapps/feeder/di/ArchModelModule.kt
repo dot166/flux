@@ -31,6 +31,7 @@ import com.nononsenseapps.feeder.ui.compose.searchfeed.SearchFeedViewModel
 import com.nononsenseapps.feeder.ui.compose.settings.SettingsViewModel
 import com.nononsenseapps.feeder.ui.compose.settings.TextSettingsViewModel
 import com.nononsenseapps.feeder.widget.FeedWidgetSettingsActivityViewModel
+import io.github.dot166.flux.OpenLinkInVanadiumCustomTabViewModel
 import kotlinx.serialization.json.Json
 import org.kodein.di.DI
 import org.kodein.di.bind
@@ -69,6 +70,7 @@ val archModelModule =
         bindWithActivityViewModelScope<FeedWidgetSettingsActivityViewModel>()
         bindWithActivityViewModelScope<OpenLinkInDefaultActivityViewModel>()
         bindWithActivityViewModelScope<CommonActivityViewModel>()
+        bindWithActivityViewModelScope<OpenLinkInVanadiumCustomTabViewModel>()
 
         bindWithComposableViewModelScope<SettingsViewModel>()
         bindWithComposableViewModelScope<EditFeedScreenViewModel>()

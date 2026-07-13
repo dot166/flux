@@ -106,7 +106,9 @@ class ActivityLauncher(
                 CustomTabsIntent
                     .Builder()
                     .apply {
-                        setToolbarColor(toolbarColor)
+                        if (toolbarColor != -1) {
+                            setToolbarColor(toolbarColor)
+                        }
                         addDefaultShareMenuItem()
                     }.build()
                     .intent

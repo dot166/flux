@@ -37,6 +37,7 @@ import com.nononsenseapps.feeder.db.room.ID_UNSET
 import com.nononsenseapps.feeder.ui.EXTRA_FEEDITEMS_TO_MARK_AS_NOTIFIED
 import com.nononsenseapps.feeder.ui.MainActivity
 import com.nononsenseapps.feeder.ui.OpenLinkInDefaultActivity
+import io.github.dot166.flux.OpenLinkInVanadiumCustomTab
 import com.nononsenseapps.feeder.util.DEEP_LINK_BASE_URI
 import com.nononsenseapps.feeder.util.notificationManager
 import com.nononsenseapps.feeder.util.urlEncode
@@ -188,6 +189,15 @@ private suspend fun singleNotification(
                 PendingIntent.FLAG_UPDATE_CURRENT or FLAG_IMMUTABLE,
             ),
         )
+    } else if (repository.getArticleOpener(item.id) == ItemOpener.CUSTOM_TAB && item.link != null) {
+        builder.setContentIntent(
+            PendingIntent.getActivity(
+                context,
+                item.id.toInt(),
+                getOpenInVanadiumCustomTabIntent(context, item.id, item.link),
+                PendingIntent.FLAG_UPDATE_CURRENT or FLAG_IMMUTABLE,
+            ),
+        )
     } else {
         builder.setContentIntent(pendingIntent)
     }
@@ -267,6 +277,26 @@ internal fun getMarkAsReadIntent(
         URI_FEEDITEMS.buildUpon().appendPath("$feedItemId").build(),
         context,
         RssNotificationBroadcastReceiver::class.java,
+    )
+
+internal fun getOpenInVanadiumCustomTabIntent(
+    context: Context,
+    feedItemId: Long,
+    link: String? = null,
+): Intent =
+    Intent(
+        Intent.ACTION_VIEW,
+        // Important to keep the URI different so PendingIntents don't collide
+        URI_FEEDITEMS
+            .buildUpon()
+            .appendPath("$feedItemId")
+            .also {
+                if (link != null) {
+                    it.appendQueryParameter(COL_LINK, link)
+                }
+            }.build(),
+        context,
+        OpenLinkInVanadiumCustomTab::class.java,
     )
 
 /**

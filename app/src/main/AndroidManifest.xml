@@ -157,6 +157,13 @@
     <receiver android:name="com.nononsenseapps.feeder.model.RssNotificationBroadcastReceiver" />
 
     <activity
+      android:name=".OpenLinkInVanadiumCustomTab"
+      android:exported="true"
+      android:label="@string/open_article_in_custom_tab"
+      android:launchMode="singleInstance"
+      android:taskAffinity="${applicationId}.OpenLinkTask" />
+
+    <activity
       android:name="com.nononsenseapps.feeder.ui.OpenLinkInDefaultActivity"
       android:exported="true"
       android:label="@string/open_link_in_browser"
