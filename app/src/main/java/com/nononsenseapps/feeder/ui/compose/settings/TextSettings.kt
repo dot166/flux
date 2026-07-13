@@ -59,7 +59,7 @@ import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.nononsenseapps.feeder.R
+import io.github.dot166.flux.R
 import com.nononsenseapps.feeder.archmodel.AddFontError
 import com.nononsenseapps.feeder.archmodel.RemoveFontError
 import com.nononsenseapps.feeder.ui.compose.components.safeSemantics

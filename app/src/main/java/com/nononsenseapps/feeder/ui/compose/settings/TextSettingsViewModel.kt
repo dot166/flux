@@ -5,7 +5,7 @@ import android.util.Log
 import androidx.annotation.FontRes
 import androidx.lifecycle.viewModelScope
 import com.nononsenseapps.feeder.ApplicationCoroutineScope
-import com.nononsenseapps.feeder.R
+import io.github.dot166.flux.R
 import com.nononsenseapps.feeder.archmodel.Repository
 import com.nononsenseapps.feeder.archmodel.getFontMetadata
 import com.nononsenseapps.feeder.base.DIAwareViewModel

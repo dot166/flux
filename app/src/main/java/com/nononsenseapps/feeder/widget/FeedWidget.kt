@@ -48,7 +48,7 @@ import coil3.size.Precision
 import coil3.size.Scale
 import coil3.toBitmap
 import com.nononsenseapps.feeder.FeederApplication
-import com.nononsenseapps.feeder.R
+import io.github.dot166.flux.R
 import com.nononsenseapps.feeder.archmodel.Repository
 import com.nononsenseapps.feeder.db.room.ID_UNSET
 import com.nononsenseapps.feeder.model.RssLocalSync
@@ -222,11 +222,11 @@ class FeedWidget : GlanceAppWidget() {
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Image(
-                    provider = ImageProvider(R.drawable.ic_stat_f),
+                    provider = ImageProvider(R.drawable.outline_rss_feed_24),
                     contentDescription = null,
                 )
                 Text(
-                    text = LocalContext.current.getString(R.string.widget_title),
+                    text = LocalContext.current.getString(R.string.app_name),
                     style = TextStyle(color = GlanceTheme.colors.onSurface),
                 )
             }

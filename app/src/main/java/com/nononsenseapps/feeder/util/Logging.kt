@@ -1,7 +1,7 @@
 package com.nononsenseapps.feeder.util
 
 import android.util.Log
-import com.nononsenseapps.feeder.BuildConfig
+import io.github.dot166.flux.BuildConfig
 
 fun logDebug(
     tag: String,

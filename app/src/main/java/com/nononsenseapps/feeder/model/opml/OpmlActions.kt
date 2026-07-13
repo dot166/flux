@@ -3,7 +3,7 @@ package com.nononsenseapps.feeder.model.opml
 import android.content.ContentResolver
 import android.net.Uri
 import android.util.Log
-import com.nononsenseapps.feeder.R
+import io.github.dot166.flux.R
 import com.nononsenseapps.feeder.archmodel.SettingsStore
 import com.nononsenseapps.feeder.background.runOnceRssSync
 import com.nononsenseapps.feeder.db.room.FeedDao

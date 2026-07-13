@@ -36,7 +36,7 @@ import coil3.size.Precision
 import coil3.size.Scale
 import coil3.size.Size
 import coil3.size.pxOrElse
-import com.nononsenseapps.feeder.R
+import io.github.dot166.flux.R
 import com.nononsenseapps.feeder.db.room.ID_UNSET
 import com.nononsenseapps.feeder.model.EnclosureImage
 import com.nononsenseapps.feeder.ui.compose.coil.rememberTintedVectorPainter

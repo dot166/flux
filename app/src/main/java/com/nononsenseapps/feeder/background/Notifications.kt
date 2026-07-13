@@ -9,7 +9,7 @@ import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
-import com.nononsenseapps.feeder.R
+import io.github.dot166.flux.R
 
 const val SYNC_NOTIFICATION_ID = 42623
 private const val SYNC_CHANNEL_ID = "feederSyncNotifications"

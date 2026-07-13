@@ -1,7 +1,7 @@
 package com.nononsenseapps.feeder.data.suggestions
 
 import android.content.res.Resources
-import com.nononsenseapps.feeder.R
+import io.github.dot166.flux.R
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
