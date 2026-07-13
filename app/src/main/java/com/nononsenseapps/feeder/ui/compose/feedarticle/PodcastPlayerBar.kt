@@ -35,7 +35,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import com.nononsenseapps.feeder.R
+import io.github.dot166.flux.R
 import com.nononsenseapps.feeder.model.PodcastPlayerState
 import com.nononsenseapps.feeder.ui.compose.components.PaddedBottomAppBar
 import com.nononsenseapps.feeder.ui.compose.feed.PlainTooltipBox

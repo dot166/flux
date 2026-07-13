@@ -13,7 +13,7 @@ import android.view.translation.TranslationResponseValue
 import android.view.translation.TranslationSpec
 import androidx.annotation.RequiresApi
 import androidx.annotation.StringRes
-import com.nononsenseapps.feeder.R
+import io.github.dot166.flux.R
 import com.nononsenseapps.feeder.model.detectLocaleFromText
 import com.nononsenseapps.feeder.model.hasEnoughTextForLanguageDetection
 import com.nononsenseapps.feeder.model.prepareTextForLanguageDetection
