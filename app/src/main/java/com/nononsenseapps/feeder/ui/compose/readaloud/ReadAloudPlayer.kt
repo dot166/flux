@@ -48,7 +48,7 @@ import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.nononsenseapps.feeder.R
+import io.github.dot166.flux.R
 import com.nononsenseapps.feeder.model.AppSetting
 import com.nononsenseapps.feeder.model.ForcedAuto
 import com.nononsenseapps.feeder.model.ForcedLocale

@@ -9,7 +9,7 @@ import android.webkit.WebResourceRequest
 import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
-import com.nononsenseapps.feeder.R
+import io.github.dot166.flux.R
 import com.nononsenseapps.feeder.util.logDebug
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers

@@ -54,7 +54,7 @@ import coil3.request.ImageRequest
 import coil3.request.crossfade
 import coil3.size.Precision
 import coil3.size.Scale
-import com.nononsenseapps.feeder.R
+import io.github.dot166.flux.R
 
 /** Keeps the linked-image choice local, preserving the reader's original link callback. */
 @Composable

@@ -1,6 +1,6 @@
 package com.nononsenseapps.feeder.model
 
-import com.nononsenseapps.feeder.BuildConfig
+import io.github.dot166.flux.BuildConfig
 import okhttp3.Interceptor
 import okhttp3.Response
 

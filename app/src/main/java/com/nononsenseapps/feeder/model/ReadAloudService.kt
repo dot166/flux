@@ -24,7 +24,7 @@ import androidx.media3.session.SessionResult
 import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.ListenableFuture
 import com.nononsenseapps.feeder.FeederApplication
-import com.nononsenseapps.feeder.R
+import io.github.dot166.flux.R
 import com.nononsenseapps.feeder.ui.MainActivity
 import com.nononsenseapps.feeder.util.DEEP_LINK_BASE_URI
 import org.kodein.di.direct

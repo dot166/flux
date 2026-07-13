@@ -5,7 +5,7 @@ import android.media.AudioAttributes
 import android.media.MediaPlayer
 import android.net.Uri
 import androidx.compose.runtime.Immutable
-import com.nononsenseapps.feeder.R
+import io.github.dot166.flux.R
 import com.nononsenseapps.feeder.util.logDebug
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
