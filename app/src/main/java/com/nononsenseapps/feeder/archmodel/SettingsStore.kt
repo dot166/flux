@@ -348,7 +348,7 @@ class SettingsStore(
             itemOpenerFromString(
                 sp.getStringNonNull(
                     PREF_DEFAULT_OPEN_ITEM_WITH,
-                    PREF_VAL_OPEN_WITH_READER,
+                    PREF_VAL_OPEN_WITH_CUSTOM_TAB,
                 ),
             ),
         )
