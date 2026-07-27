@@ -61,6 +61,7 @@ class EditFeedScreenViewModel(
     override var allowRules: String by mutableSavedStateOf(state, "") { value ->
         allowRulesError = ArticleRuleSet.parse(value).errors.firstOrNull()
     }
+    override var showInAll: Boolean by mutableSavedStateOf(state, true)
     override var allTags: List<String> by mutableStateOf(emptyList())
 
     override var feedImage: String by mutableStateOf("")
@@ -135,6 +136,9 @@ class EditFeedScreenViewModel(
             if (!state.contains("allowRules")) {
                 allowRules = feed.allowRules
             }
+            if (!state.contains("showInAll")) {
+                showInAll = feed.showInAll
+            }
 
             repository.allTags
                 .collect { value ->
@@ -164,6 +168,7 @@ class EditFeedScreenViewModel(
                     fetchOgImages = fetchOgImages,
                     blockRules = blockRules,
                     allowRules = allowRules,
+                    showInAll = showInAll,
                 )
 
             // No point in doing anything unless they actually differ

@@ -19,6 +19,7 @@ import com.nononsenseapps.feeder.db.COL_NOTIFY
 import com.nononsenseapps.feeder.db.COL_OPEN_ARTICLES_WITH
 import com.nononsenseapps.feeder.db.COL_RESPONSEHASH
 import com.nononsenseapps.feeder.db.COL_RETRY_AFTER
+import com.nononsenseapps.feeder.db.COL_SHOW_IN_ALL
 import com.nononsenseapps.feeder.db.COL_SITE_FETCHED
 import com.nononsenseapps.feeder.db.COL_SKIP_DUPLICATES
 import com.nononsenseapps.feeder.db.COL_SUMMARIZE_ON_OPEN
@@ -67,6 +68,7 @@ data class Feed
         @ColumnInfo(name = COL_FETCH_OG_IMAGES) var fetchOgImages: Boolean = false,
         @ColumnInfo(name = COL_BLOCK_RULES) var blockRules: String = "",
         @ColumnInfo(name = COL_ALLOW_RULES) var allowRules: String = "",
+        @ColumnInfo(name = COL_SHOW_IN_ALL) var showInAll: Boolean = true,
     ) {
         constructor() : this(id = ID_UNSET)
 

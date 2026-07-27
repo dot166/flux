@@ -51,6 +51,7 @@ private const val ATTR_FETCH_OG_IMAGES = "fetchOgImages"
 private const val ATTR_BLOCK_RULES = "blockRules"
 
 private const val ATTR_ALLOW_RULES = "allowRules"
+private const val ATTR_SHOW_IN_ALL = "showInAll"
 
 private const val TAG_BLOCKED = "blocked"
 
@@ -312,6 +313,11 @@ class OpmlPullParser(
                             parser
                                 .getAttributeValue(OPML_FEEDER_NAMESPACE, ATTR_ALLOW_RULES)
                                 ?: feed.allowRules,
+                        showInAll =
+                            parser
+                                .getAttributeValue(OPML_FEEDER_NAMESPACE, ATTR_SHOW_IN_ALL)
+                                ?.toBoolean()
+                                ?: feed.showInAll,
                         imageUrl =
                             parser
                                 .getAttributeValue(OPML_FEEDER_NAMESPACE, ATTR_IMAGE_URL)

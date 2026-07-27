@@ -36,6 +36,7 @@ import com.nononsenseapps.feeder.ui.compose.settings.FontSelection
 import com.nononsenseapps.feeder.util.Either
 import com.nononsenseapps.feeder.util.addDynamicShortcutToFeed
 import com.nononsenseapps.feeder.util.reportShortcutToFeedUsed
+import io.github.dot166.jlib.app.LocalSharedPrefsManager
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -70,7 +71,45 @@ class Repository(
     private val fontStore: FontStore by instance()
 
     init {
+        migrateFromV1ifMissing()
         addFeederNewsIfInitialStart()
+    }
+
+    private fun migrateFromV1ifMissing() {
+        val prefs = LocalSharedPrefsManager(application)
+        val v1Repository = prefs.getRssFeeds()
+        if (v1Repository.isNotEmpty()) {
+            val newV1 = v1Repository.toMutableList()
+            for (feed in v1Repository) {
+                if (feed.isAll) {
+                    // impossible, skip it
+                    newV1.remove(feed)
+                    continue
+                }
+                applicationCoroutineScope.launch {
+                    val feedId =
+                        saveFeed(
+                            Feed(
+                                url = URL(feed.url),
+                                whenModified = Instant.now(),
+                                showInAll = !feed.hiddenFromAll,
+                            ),
+                        )
+
+                    runOnceRssSync(
+                        di = di,
+                        feedId = feedId,
+                        triggeredByUser = false,
+                    )
+                }
+                newV1.remove(feed)
+            }
+            prefs.saveRssFeeds(newV1)
+            if (!settingsStore.addedFeederNews.value) {
+                // lie to app to make it look like we added the default feed when we did not ;3
+                settingsStore.setAddedFeederNews(true)
+            }
+        }
     }
 
     private fun addFeederNewsIfInitialStart() {
