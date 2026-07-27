@@ -422,6 +422,34 @@ class Repository(
                 }.distinctUntilChanged()
 
     @OptIn(ExperimentalCoroutinesApi::class)
+    fun getFeedListItemsForMinusOne(): Flow<PagingData<FeedListItem>> =
+        combine(
+            currentFeedAndTag,
+            minReadTime,
+            currentSorting,
+            feedListFilter,
+            search,
+        ) { _, minReadTime, currentSorting, _, _ ->
+            FeedListArgs(
+                feedId = ID_ALL_FEEDS,
+                tag = "",
+                minReadTime = minReadTime,
+                newestFirst = currentSorting == SortingOptions.NEWEST_FIRST,
+                filter = PrefsFeedListFilter(saved = false, recentlyRead = true, read = true),
+                search = "",
+            )
+        }.flatMapLatest {
+            feedItemStore.getPagedFeedItemsRaw(
+                feedId = it.feedId,
+                tag = it.tag,
+                minReadTime = it.minReadTime,
+                newestFirst = it.newestFirst,
+                filter = it.filter,
+                search = it.search,
+            )
+        }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
     fun getCurrentFeedListItems(): Flow<PagingData<FeedListItem>> =
         combine(
             currentFeedAndTag,

@@ -20,6 +20,7 @@ import com.nononsenseapps.feeder.blob.blobFullInputStream
 import com.nononsenseapps.feeder.blob.blobInputStream
 import com.nononsenseapps.feeder.db.room.FeedItemCursor
 import com.nononsenseapps.feeder.db.room.FeedTitle
+import com.nononsenseapps.feeder.db.room.ID_ALL_FEEDS
 import com.nononsenseapps.feeder.db.room.ID_UNSET
 import com.nononsenseapps.feeder.model.FeedUnreadCount
 import com.nononsenseapps.feeder.model.LocaleOverride
@@ -65,6 +66,11 @@ class FeedViewModel(
     val currentFeedListItems: Flow<PagingData<FeedListItem>> =
         repository
             .getCurrentFeedListItems()
+            .cachedIn(viewModelScope)
+
+    val feedListItemsForMinusOne: Flow<PagingData<FeedListItem>> =
+        repository
+            .getFeedListItemsForMinusOne()
             .cachedIn(viewModelScope)
 
     private val translatedFeedCardEntries = MutableStateFlow<Map<FeedCardSource, FeedCardTranslationEntry>>(emptyMap())
@@ -158,6 +164,16 @@ class FeedViewModel(
         bookmarked: Boolean,
     ) = applicationCoroutineScope.launch {
         repository.setBookmarked(itemId, bookmarked)
+    }
+
+    fun requestImmediateSyncOfMinusOne() {
+        runOnceRssSync(
+            di = di,
+            feedId = ID_ALL_FEEDS,
+            feedTag = "",
+            forceNetwork = true,
+            triggeredByUser = true,
+        )
     }
 
     fun requestImmediateSyncOfCurrentFeedOrTag() {
