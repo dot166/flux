@@ -118,7 +118,7 @@ class OpmlParserTest : DIAware {
                 settingsStore.setLinkOpener(LinkOpener.CUSTOM_TAB)
                 settingsStore.setAddedFeederNews(true)
                 settingsStore.setCurrentTheme(ThemeOptions.NIGHT)
-                settingsStore.setDarkThemePreference(DarkThemePreferences.DARK)
+                settingsStore.setDarkThemePreference(DarkThemePreferences.BLACK)
                 settingsStore.setUseDynamicTheme(false)
                 settingsStore.setCurrentSorting(SortingOptions.OLDEST_FIRST)
                 settingsStore.setShowFab(false)

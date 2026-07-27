@@ -243,7 +243,7 @@ private fun SettingsScreenPreview() {
         SettingsList(
             currentThemeValue = ThemeOptions.SYSTEM.asThemeOption(),
             onThemeChange = {},
-            currentDarkThemePreference = DarkThemePreferences.BLACK.asDarkThemeOption(),
+            currentDarkThemePreference = DarkThemePreferences.DARK.asDarkThemeOption(),
             onDarkThemePreferenceChange = {},
             currentSortingValue = SortingOptions.NEWEST_FIRST.asSortOption(),
             onSortingChange = {},

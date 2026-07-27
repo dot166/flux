@@ -376,7 +376,7 @@ class SettingsViewModel(
 @Immutable
 data class SettingsViewState(
     val currentTheme: ThemeOptions = ThemeOptions.SYSTEM,
-    val darkThemePreference: DarkThemePreferences = DarkThemePreferences.BLACK,
+    val darkThemePreference: DarkThemePreferences = DarkThemePreferences.DARK,
     val currentSorting: SortingOptions = SortingOptions.NEWEST_FIRST,
     val showFab: Boolean = true,
     val feedItemStyle: FeedItemStyle = FeedItemStyle.CARD,

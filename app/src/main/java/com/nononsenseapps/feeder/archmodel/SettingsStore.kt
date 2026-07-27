@@ -203,7 +203,7 @@ class SettingsStore(
         MutableStateFlow(
             darkThemePreferenceFromString(
                 sp.getString(PREF_DARK_THEME, null)?.uppercase()
-                    ?: DarkThemePreferences.BLACK.name,
+                    ?: DarkThemePreferences.DARK.name,
             ),
         )
     val darkThemePreference = _darkThemePreference.asStateFlow()
@@ -930,7 +930,7 @@ fun darkThemePreferenceFromString(value: String): DarkThemePreferences =
     try {
         DarkThemePreferences.valueOf(value.uppercase())
     } catch (_: Exception) {
-        DarkThemePreferences.BLACK
+        DarkThemePreferences.DARK
     }
 
 fun swipeAsReadFromString(value: String): SwipeAsRead =
