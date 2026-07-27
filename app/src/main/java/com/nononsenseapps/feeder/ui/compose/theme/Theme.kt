@@ -17,6 +17,7 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import com.google.android.gsa.overlay.NexusOverlay
 import com.nononsenseapps.feeder.archmodel.DarkThemePreferences
 import com.nononsenseapps.feeder.archmodel.ThemeOptions
 import com.nononsenseapps.feeder.ui.compose.settings.FontSelection
@@ -226,6 +227,31 @@ fun ComponentActivity.FeederTheme(
 
             onDispose {}
         }
+        ProvideDimens {
+            content()
+        }
+    }
+}
+
+@Composable
+fun NexusOverlay.FeederTheme(
+    currentTheme: ThemeOptions = ThemeOptions.SYSTEM,
+    darkThemePreference: DarkThemePreferences = DarkThemePreferences.DARK,
+    dynamicColors: Boolean = false,
+    content: @Composable () -> Unit,
+) {
+    val colorScheme = currentTheme.getColorScheme(darkThemePreference, dynamicColors)
+    val typographySettings = LocalTypographySettings.current
+
+    val feederTypography =
+        remember(typographySettings) {
+            FeederTypography(typographySettings)
+        }
+
+    MaterialTheme(
+        colorScheme = colorScheme,
+        typography = feederTypography.typography,
+    ) {
         ProvideDimens {
             content()
         }
