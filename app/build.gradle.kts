@@ -1,4 +1,13 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import java.io.FileInputStream
+import java.util.Properties
+
+val keystorePropertiesFile = rootProject.file("keystore.properties")
+val useKeystoreProperties = keystorePropertiesFile.canRead()
+val keystoreProperties = Properties()
+if (useKeystoreProperties) {
+    keystoreProperties.load(FileInputStream(keystorePropertiesFile))
+}
 
 plugins {
     alias(libs.plugins.android.application)
@@ -80,23 +89,12 @@ android {
             keyAlias = "AndroidDebugKey"
             keyPassword = "android"
         }
-        if (project.hasProperty("STORE_FILE")) {
+        if (useKeystoreProperties) {
             create("release") {
-                @Suppress("LocalVariableName", "ktlint:standard:property-naming")
-                val STORE_FILE: String by project.properties
-
-                @Suppress("LocalVariableName", "ktlint:standard:property-naming")
-                val STORE_PASSWORD: String by project.properties
-
-                @Suppress("LocalVariableName", "ktlint:standard:property-naming")
-                val KEY_ALIAS: String by project.properties
-
-                @Suppress("LocalVariableName", "ktlint:standard:property-naming")
-                val KEY_PASSWORD: String by project.properties
-                storeFile = file(STORE_FILE)
-                storePassword = STORE_PASSWORD
-                keyAlias = KEY_ALIAS
-                keyPassword = KEY_PASSWORD
+                storeFile = rootProject.file(keystoreProperties["storeFile"]!!)
+                storePassword = keystoreProperties["storePassword"] as String
+                keyAlias = keystoreProperties["keyAlias"] as String
+                keyPassword = keystoreProperties["keyPassword"] as String
             }
         }
     }
@@ -120,7 +118,7 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro",
             )
-            if (project.hasProperty("STORE_FILE")) {
+            if (useKeystoreProperties) {
                 signingConfig = signingConfigs.getByName("release")
             }
         }
