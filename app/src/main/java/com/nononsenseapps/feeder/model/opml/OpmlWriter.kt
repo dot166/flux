@@ -259,6 +259,7 @@ abstract class BodyTag(
             fetchOgImages = feed.fetchOgImages
             feed.blockRules.takeIf { it.isNotBlank() }?.let { blockRules = escapeAttribute(it) }
             feed.allowRules.takeIf { it.isNotBlank() }?.let { allowRules = escapeAttribute(it) }
+            showInAll = feed.showInAll
         }
 }
 
@@ -328,6 +329,11 @@ class Outline : BodyTag("outline") {
         get() = attributes["feeder:allowRules"]!!
         set(value) {
             attributes["feeder:allowRules"] = value
+        }
+    var showInAll: Boolean
+        get() = attributes["feeder:showInAll"]!!.toBoolean()
+        set(value) {
+            attributes["feeder:showInAll"] = value.toString()
         }
 }
 

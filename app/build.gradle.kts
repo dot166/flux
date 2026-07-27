@@ -44,7 +44,7 @@ android {
         versionCode = 4243
         versionName = "2.26.0"
         // TLS1.3 is enabled in Android 10 (29) and above
-        minSdk = 29
+        minSdk = 31
         targetSdk =
             libs.versions.compileSdk
                 .get()
@@ -270,6 +270,8 @@ dependencies {
 
     // Markdown
     implementation(libs.jetbrains.markdown)
+
+    implementation("io.github.dot166:j-Lib:104.4.3")
 
     // Tests
     testImplementation(libs.bundles.kotlin)

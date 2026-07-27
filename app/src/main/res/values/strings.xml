@@ -432,4 +432,5 @@
   <string name="image_load_failed">Could not load image</string>
   <string name="image_retry">Retry</string>
   <string name="image_close">Close image</string>
+  <string name="show_in_all">Show in All Feeds</string>
 </resources>

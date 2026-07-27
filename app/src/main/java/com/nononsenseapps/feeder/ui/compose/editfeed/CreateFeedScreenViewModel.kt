@@ -58,6 +58,7 @@ class CreateFeedScreenViewModel(
     override var allowRules: String by mutableSavedStateOf(state, "") { value ->
         allowRulesError = ArticleRuleSet.parse(value).errors.firstOrNull()
     }
+    override var showInAll: Boolean by mutableSavedStateOf(state, true)
     override var allTags: List<String> by mutableStateOf(emptyList())
     override var defaultTitle: String by mutableStateOf(state["feedTitle"] ?: "")
     override var feedImage: String by mutableStateOf(state["feedImage"] ?: "")
@@ -112,6 +113,7 @@ class CreateFeedScreenViewModel(
                         fetchOgImages = fetchOgImages,
                         blockRules = blockRules,
                         allowRules = allowRules,
+                        showInAll = showInAll,
                     ),
                 )
 
