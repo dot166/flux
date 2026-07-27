@@ -45,6 +45,7 @@ class CreateFeedScreenViewModel(
     override var alternateId: Boolean by mutableSavedStateOf(state, false)
     override var summarizeOnOpen: Boolean by mutableSavedStateOf(state, false)
     override var fetchOgImages: Boolean by mutableSavedStateOf(state, false)
+    override var showInAll: Boolean by mutableSavedStateOf(state, true)
     override var allTags: List<String> by mutableStateOf(emptyList())
     override var defaultTitle: String by mutableStateOf(state["feedTitle"] ?: "")
     override var feedImage: String by mutableStateOf(state["feedImage"] ?: "")
@@ -96,6 +97,7 @@ class CreateFeedScreenViewModel(
                         whenModified = Instant.now(),
                         imageUrl = sloppyLinkToStrictURLOrNull(feedImage),
                         fetchOgImages = fetchOgImages,
+                        showInAll = showInAll,
                     ),
                 )
 

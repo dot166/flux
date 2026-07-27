@@ -17,6 +17,7 @@ import com.nononsenseapps.feeder.db.COL_NOTIFY
 import com.nononsenseapps.feeder.db.COL_OPEN_ARTICLES_WITH
 import com.nononsenseapps.feeder.db.COL_RESPONSEHASH
 import com.nononsenseapps.feeder.db.COL_RETRY_AFTER
+import com.nononsenseapps.feeder.db.COL_SHOW_IN_ALL
 import com.nononsenseapps.feeder.db.COL_SITE_FETCHED
 import com.nononsenseapps.feeder.db.COL_SKIP_DUPLICATES
 import com.nononsenseapps.feeder.db.COL_SUMMARIZE_ON_OPEN
@@ -63,6 +64,7 @@ data class Feed
         @ColumnInfo(name = COL_RETRY_AFTER) var retryAfter: Instant = Instant.EPOCH,
         @ColumnInfo(name = COL_SUMMARIZE_ON_OPEN) var summarizeOnOpen: Boolean = false,
         @ColumnInfo(name = COL_FETCH_OG_IMAGES) var fetchOgImages: Boolean = false,
+        @ColumnInfo(name = COL_SHOW_IN_ALL) var showInAll: Boolean = true,
     ) {
         constructor() : this(id = ID_UNSET)
 
