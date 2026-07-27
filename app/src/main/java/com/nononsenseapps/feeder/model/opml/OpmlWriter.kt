@@ -242,6 +242,7 @@ abstract class BodyTag(
             openArticlesWith = feed.openArticlesWith
             alternateId = feed.alternateId
             fetchOgImages = feed.fetchOgImages
+            showInAll = feed.showInAll
         }
 }
 
@@ -301,6 +302,11 @@ class Outline : BodyTag("outline") {
         get() = attributes["feeder:fetchOgImages"]!!.toBoolean()
         set(value) {
             attributes["feeder:fetchOgImages"] = value.toString()
+        }
+    var showInAll: Boolean
+        get() = attributes["feeder:showInAll"]!!.toBoolean()
+        set(value) {
+            attributes["feeder:showInAll"] = value.toString()
         }
 }
 

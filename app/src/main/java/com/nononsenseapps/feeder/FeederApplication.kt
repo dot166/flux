@@ -47,6 +47,7 @@ import com.nononsenseapps.feeder.util.filePathProvider
 import com.nononsenseapps.feeder.util.logDebug
 import com.nononsenseapps.jsonfeed.cachingHttpClient
 import io.github.dot166.flux.BuildConfig
+import io.github.dot166.jlib.app.RestorableSettingsApplication
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.withContext
@@ -65,7 +66,7 @@ import java.util.concurrent.TimeUnit
 
 @OptIn(ExperimentalCoilApi::class)
 class FeederApplication :
-    Application(),
+    RestorableSettingsApplication(),
     DIAware,
     SingletonImageLoader.Factory {
     private val applicationCoroutineScope = ApplicationCoroutineScope()

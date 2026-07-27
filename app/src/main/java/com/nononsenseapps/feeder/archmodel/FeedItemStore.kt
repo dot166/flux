@@ -14,6 +14,7 @@ import com.nononsenseapps.feeder.db.room.FeedItemDao.Companion.FEED_ITEM_LIST_SO
 import com.nononsenseapps.feeder.db.room.FeedItemDao.Companion.FEED_ITEM_LIST_SORT_ORDER_DESC
 import com.nononsenseapps.feeder.db.room.FeedItemIdWithLink
 import com.nononsenseapps.feeder.db.room.FeedItemWithFeed
+import com.nononsenseapps.feeder.db.room.ID_ALL_FEEDS
 import com.nononsenseapps.feeder.db.room.ID_SAVED_ARTICLES
 import com.nononsenseapps.feeder.db.room.ID_UNSET
 import com.nononsenseapps.feeder.db.room.upsertFeedItems
@@ -172,6 +173,7 @@ class FeedItemStore(
             }
             onlySavedArticles -> append("AND bookmarked = 1\n")
             feedId > ID_UNSET -> append("AND feed_id IS ?\n").also { args.add(feedId) }
+            feedId == ID_ALL_FEEDS -> append("AND show_in_all = 1\n")
             tag.isNotEmpty() -> append("AND tag IS ?\n").also { args.add(tag) }
         }
     }
