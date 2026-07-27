@@ -1,4 +1,13 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import java.io.FileInputStream
+import java.util.Properties
+
+val keystorePropertiesFile = rootProject.file("keystore.properties")
+val useKeystoreProperties = keystorePropertiesFile.canRead()
+val keystoreProperties = Properties()
+if (useKeystoreProperties) {
+    keystoreProperties.load(FileInputStream(keystorePropertiesFile))
+}
 
 plugins {
     alias(libs.plugins.android.application)
@@ -83,12 +92,12 @@ android {
             keyAlias = "AndroidDebugKey"
             keyPassword = "android"
         }
-        if (project.hasProperty("STORE_FILE")) {
+        if (useKeystoreProperties) {
             create("release") {
-                storeFile = file(project.property("STORE_FILE") as String)
-                storePassword = project.findProperty("STORE_PASSWORD") as String?
-                keyAlias = project.findProperty("KEY_ALIAS") as String?
-                keyPassword = project.findProperty("KEY_PASSWORD") as String?
+                storeFile = rootProject.file(keystoreProperties["storeFile"]!!)
+                storePassword = keystoreProperties["storePassword"] as String
+                keyAlias = keystoreProperties["keyAlias"] as String
+                keyPassword = keystoreProperties["keyPassword"] as String
             }
         }
     }
@@ -114,7 +123,7 @@ android {
                     getDefaultProguardFile("proguard-android-optimize.txt"),
                     "proguard-rules.pro",
                 )
-                if (project.hasProperty("STORE_FILE")) {
+                if (useKeystoreProperties) {
                     signingConfig = signingConfigs.getByName("release")
                 }
             }
