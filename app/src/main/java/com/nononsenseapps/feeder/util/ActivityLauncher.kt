@@ -1,7 +1,7 @@
 package com.nononsenseapps.feeder.util
 
-import android.app.Activity
 import android.content.ActivityNotFoundException
+import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.provider.Browser
@@ -14,7 +14,7 @@ import com.nononsenseapps.feeder.archmodel.LinkOpener
 import com.nononsenseapps.feeder.archmodel.Repository
 
 class ActivityLauncher(
-    private val activity: Activity,
+    private val activity: Context,
     private val repository: Repository,
 ) {
     private val configuration by lazy { activity.resources.configuration }

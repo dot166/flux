@@ -9,6 +9,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.DpSize
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.google.android.gsa.overlay.ui.panel.OverlayControllerSlidingPanelLayout
 import com.nononsenseapps.feeder.archmodel.ThemeOptions
 import com.nononsenseapps.feeder.base.DIAwareComponentActivity
 import com.nononsenseapps.feeder.base.diAwareViewModel
@@ -16,7 +17,35 @@ import com.nononsenseapps.feeder.ui.CommonActivityViewModel
 import com.nononsenseapps.feeder.ui.compose.theme.FeederTheme
 import com.nononsenseapps.feeder.ui.compose.theme.PreviewTheme
 import com.nononsenseapps.feeder.ui.compose.theme.ProvideTypographySettings
+import io.github.dot166.flux.DIAwareMinusOneOverlay
 import org.kodein.di.compose.withDI
+
+@Composable
+fun DIAwareMinusOneOverlay.withAllProviders(content: @Composable () -> Unit) {
+    withDI {
+        val viewModel: CommonActivityViewModel = (slidingPanelLayout as OverlayControllerSlidingPanelLayout).diAwareViewModel()
+        val currentTheme by viewModel.currentTheme.collectAsStateWithLifecycle()
+        val darkThemePreference by viewModel.darkThemePreference.collectAsStateWithLifecycle()
+        val dynamicColors by viewModel.dynamicColors.collectAsStateWithLifecycle()
+        val textScale by viewModel.textScale.collectAsStateWithLifecycle()
+        val font by viewModel.font.collectAsStateWithLifecycle()
+        withFoldableHinge {
+            withWindowMetrics {
+                withWindowSize {
+                    ProvideTypographySettings(fontScale = textScale, font = font) {
+                        FeederTheme(
+                            currentTheme = currentTheme,
+                            darkThemePreference = darkThemePreference,
+                            dynamicColors = dynamicColors,
+                        ) {
+                            WithFeederTextToolbar(content)
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
 
 @Composable
 fun DIAwareComponentActivity.withAllProviders(content: @Composable () -> Unit) {
