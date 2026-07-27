@@ -117,7 +117,7 @@ private val eInkColors =
 @Composable
 fun PreviewTheme(
     currentTheme: ThemeOptions = ThemeOptions.SYSTEM,
-    darkThemePreference: DarkThemePreferences = DarkThemePreferences.BLACK,
+    darkThemePreference: DarkThemePreferences = DarkThemePreferences.DARK,
     dynamicColors: Boolean = false,
     content: @Composable () -> Unit,
 ) {
@@ -144,7 +144,7 @@ fun PreviewTheme(
 @Composable
 fun ComponentActivity.FeederTheme(
     currentTheme: ThemeOptions = ThemeOptions.SYSTEM,
-    darkThemePreference: DarkThemePreferences = DarkThemePreferences.BLACK,
+    darkThemePreference: DarkThemePreferences = DarkThemePreferences.DARK,
     dynamicColors: Boolean = false,
     content: @Composable () -> Unit,
 ) {
