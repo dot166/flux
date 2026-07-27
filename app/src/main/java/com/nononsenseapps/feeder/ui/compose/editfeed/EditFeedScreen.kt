@@ -515,6 +515,12 @@ fun ColumnScope.RightContent(
         icon = null,
     )
     SwitchSetting(
+        title = stringResource(id = R.string.show_in_all),
+        checked = viewState.showInAll,
+        { viewState.showInAll = it },
+        icon = null,
+    )
+    SwitchSetting(
         title = stringResource(id = R.string.skip_duplicate_articles),
         checked = viewState.skipDuplicates,
         { viewState.skipDuplicates = it },
@@ -585,6 +591,7 @@ interface EditFeedScreenState {
     var alternateId: Boolean
     var summarizeOnOpen: Boolean
     var fetchOgImages: Boolean
+    var showInAll: Boolean
     val isOkToSave: Boolean
     val isNotValidUrl: Boolean
     val isOpenItemWithBrowser: Boolean
@@ -619,6 +626,7 @@ private class ScreenState(
     override var alternateId: Boolean by mutableStateOf(false)
     override var summarizeOnOpen: Boolean by mutableStateOf(false)
     override var fetchOgImages: Boolean by mutableStateOf(false)
+    override var showInAll: Boolean by mutableStateOf(true)
 }
 
 @Preview("Edit Feed Phone")
