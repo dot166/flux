@@ -45,6 +45,7 @@
     android:supportsRtl="true"
     android:theme="@style/AppThemeDayNoActionBar"
     android:memtagMode="async"
+    tools:replace="android:name"
     android:usesCleartextTraffic="true">
 
     <meta-data
