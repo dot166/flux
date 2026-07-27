@@ -270,6 +270,7 @@ dependencies {
     implementation(libs.jetbrains.markdown)
 
     implementation("io.github.dot166:j-Lib:104.4.3")
+    implementation("io.github.dot166:LibLauncher3:1.1.3")
 
     // Tests
     testImplementation(libs.bundles.kotlin)

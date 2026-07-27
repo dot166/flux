@@ -8,6 +8,7 @@ import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.ui.graphics.toComposeRect
 import androidx.window.layout.FoldingFeature
 import com.google.accompanist.adaptive.calculateDisplayFeatures
+import com.google.android.gsa.overlay.NexusOverlay
 
 class FoldableHinge(
     val bounds: androidx.compose.ui.geometry.Rect,
@@ -33,6 +34,13 @@ fun Activity.withFoldableHinge(content: @Composable () -> Unit) {
         }
 
     CompositionLocalProvider(LocalFoldableHinge provides foldableHinge) {
+        content()
+    }
+}
+
+@Composable
+fun NexusOverlay.withFoldableHinge(content: @Composable () -> Unit) {
+    CompositionLocalProvider(LocalFoldableHinge provides null) {
         content()
     }
 }
