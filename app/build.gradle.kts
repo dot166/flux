@@ -46,15 +46,11 @@ android {
 
     defaultConfig {
         applicationId = "io.github.dot166.flux"
-        // Match upstream version
-        versionCode = 4040
-        versionName = "2.21.2"
+        versionCode = 4041
+        versionName = "2.21.2.1"
         // TLS1.3 is enabled in Android 10 (29) and above
         minSdk = 31
-        targetSdk =
-            libs.versions.compileSdk
-                .get()
-                .toInt()
+        targetSdk = 36 // lock to 36 to try and make it look like upstream to clients
 
         vectorDrawables.useSupportLibrary = true
 
