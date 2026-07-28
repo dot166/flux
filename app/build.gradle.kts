@@ -51,10 +51,7 @@ android {
         versionName = "2.23.0"
         // TLS1.3 is enabled in Android 10 (29) and above
         minSdk = 31
-        targetSdk =
-            libs.versions.compileSdk
-                .get()
-                .toInt()
+        targetSdk = 36 // lock to 36 to try and make it look like upstream to clients
 
         vectorDrawables.useSupportLibrary = true
 
