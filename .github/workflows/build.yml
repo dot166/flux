@@ -42,7 +42,11 @@ jobs:
           mkdir -p artifacts/apps/packages/io.github.dot166.flux/${{ env.VERSION }}
           echo "channel = \"stable"\" > artifacts/apps/packages/io.github.dot166.flux/${{ env.VERSION }}/channel.toml
           cp app/build/outputs/apk/release/app-release.apk artifacts/apps/packages/io.github.dot166.flux/${{ env.VERSION }}/base.apk
+          git lfs install
           git clone https://x-access-token:${{ secrets.GH_TOKEN }}@github.com/dot166/apks.git apks
+          cd apks
+          git lfs pull
+          cd ..
           cp -r artifacts/* apks/
           cd apks
           git add .
