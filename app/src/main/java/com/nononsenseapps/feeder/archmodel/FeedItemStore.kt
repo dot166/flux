@@ -176,7 +176,7 @@ class FeedItemStore(
             }
             onlySavedArticles -> append("AND bookmarked = 1\n")
             feedId > ID_UNSET -> append("AND feed_id IS ?\n").also { args.add(feedId) }
-            feedId == ID_ALL_FEEDS -> append("AND show_in_all = 1\n")
+            feedId == ID_ALL_FEEDS || feedId == ID_UNSET -> append("AND show_in_all = 1\n")
             tag.isNotEmpty() -> append("AND tag IS ?\n").also { args.add(tag) }
         }
     }
