@@ -48,9 +48,12 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.Json
 import org.kodein.di.DI
 import org.kodein.di.DIAware
 import org.kodein.di.instance
+import java.net.HttpURLConnection
 import java.net.URL
 import java.time.Instant
 import java.time.ZonedDateTime
@@ -1063,10 +1066,74 @@ fun String?.toSafeString(): String? {
                 .replace("://twitter.com", "://xcancel.com")
                 .replace("://www.twitter.com", "://xcancel.com")
         } else if (contains("://reddit.com") || contains("://www.reddit.com")) {
-            replace("://reddit.com", "://kddit.kalli.st")
-                .replace("://www.reddit.com", "://kddit.kalli.st")
+            val instance = getRedlibInstance()
+            replace("://reddit.com", instance.url!!)
+                .replace("://www.reddit.com", instance.url)
         } else {
             this
         }
     return str
+}
+
+fun getRedlibInstance(): Instance {
+    val json = Json {
+        ignoreUnknownKeys = true
+    }
+
+    val instanceList = json.decodeFromString<InstanceList>(fetchJson("https://raw.githubusercontent.com/redlib-org/redlib-instances/refs/heads/main/instances.json")).instances
+    val filteredList = instanceList.filter { !it.sfw && it.url != null && (it.country != "UK" && it.country != "GB") && isUrlUp(it.url) }
+    return filteredList.first()
+}
+
+@Serializable
+data class InstanceList(
+    val updated: String,
+    val instances: List<Instance>
+)
+
+@Serializable
+data class Instance(
+    val url: String? = null,
+    val onion: String? = null,
+    val country: String,
+    val version: String,
+    val description: String? = null,
+    val cloudflare: Boolean = false
+) {
+    val sfw = description?.contains("SFW") ?: false // assume false if no description
+}
+
+fun fetchJson(url: String): String {
+    val connection = URL(url).openConnection() as HttpURLConnection
+
+    return try {
+        connection.requestMethod = "GET"
+        connection.connectTimeout = 10_000
+        connection.readTimeout = 10_000
+        connection.setRequestProperty("Accept", "application/json")
+
+        if (connection.responseCode !in 200..299) {
+            throw Exception("HTTP ${connection.responseCode}")
+        }
+
+        connection.inputStream
+            .bufferedReader()
+            .use { it.readText() }
+    } finally {
+        connection.disconnect()
+    }
+}
+
+fun isUrlUp(url: String): Boolean {
+    return try {
+        val connection = URL(url).openConnection() as HttpURLConnection
+        connection.requestMethod = "HEAD"
+        connection.connectTimeout = 5_000
+        connection.readTimeout = 5_000
+        connection.instanceFollowRedirects = true
+
+        connection.responseCode in 200..399
+    } catch (_: Exception) {
+        false
+    }
 }
