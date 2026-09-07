@@ -47,8 +47,8 @@ android {
     defaultConfig {
         applicationId = "io.github.dot166.flux"
         // Match upstream version
-        versionCode = 4092
-        versionName = "2.23.0"
+        versionCode = 4093
+        versionName = "2.23.0.1"
         // TLS1.3 is enabled in Android 10 (29) and above
         minSdk = 31
         targetSdk = 36 // lock to 36 to try and make it look like upstream to clients
