@@ -1058,13 +1058,13 @@ fun String?.toSafeString(): String? {
     }
     val str: String? =
         if (contains("://x.com") || contains("://www.x.com") || contains("://twitter.com") || contains("://www.twitter.com")) {
-            replace("://x.com", "://xcancel.com")
-                .replace("://www.x.com", "://xcancel.com")
-                .replace("://twitter.com", "://xcancel.com")
+            replace("://www.x.com", "://xcancel.com")
+                .replace("://x.com", "://xcancel.com")
                 .replace("://www.twitter.com", "://xcancel.com")
+                .replace("://twitter.com", "://xcancel.com")
         } else if (contains("://reddit.com") || contains("://www.reddit.com")) {
-            replace("://reddit.com", "://kddit.kalli.st")
-                .replace("://www.reddit.com", "://kddit.kalli.st")
+            replace("://www.reddit.com", "://redlib.catsarch.com")
+                .replace("://reddit.com", "://redlib.catsarch.com")
         } else {
             this
         }
