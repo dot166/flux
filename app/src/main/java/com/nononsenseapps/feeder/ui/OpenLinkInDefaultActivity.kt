@@ -4,6 +4,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
+import androidx.compose.ui.graphics.toArgb
 import androidx.lifecycle.lifecycleScope
 import io.github.dot166.flux.R
 import com.nononsenseapps.feeder.base.DIAwareComponentActivity
@@ -11,6 +12,7 @@ import com.nononsenseapps.feeder.db.COL_LINK
 import com.nononsenseapps.feeder.db.room.ID_UNSET
 import com.nononsenseapps.feeder.model.ACTION_OPEN_IN_CUSTOM_TAB
 import com.nononsenseapps.feeder.model.cancelNotification
+import com.nononsenseapps.feeder.ui.compose.theme.getColorScheme
 import com.nononsenseapps.feeder.util.ActivityLauncher
 import com.nononsenseapps.feeder.util.DEEP_LINK_HOST
 import kotlinx.coroutines.launch
@@ -70,9 +72,13 @@ class OpenLinkInDefaultActivity : DIAwareComponentActivity() {
         if (link != null) {
             try {
                 if (intent.action == ACTION_OPEN_IN_CUSTOM_TAB) {
+                    val viewModel: CommonActivityViewModel by instance(arg = this)
+                    val currentTheme = viewModel.currentTheme.value
+                    val darkThemePreference = viewModel.darkThemePreference.value
+                    val dynamicColors = viewModel.dynamicColors.value
                     activityLauncher.openLinkInCustomTab(
                         link,
-                        toolbarColor = getColor(R.color.primary),
+                        toolbarColor = currentTheme.getColorScheme(this, darkThemePreference, dynamicColors).surface.toArgb(),
                         openAdjacentIfSuitable = false,
                     )
                 } else {

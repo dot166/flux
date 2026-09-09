@@ -1,5 +1,7 @@
 package com.nononsenseapps.feeder.ui.compose.theme
 
+import android.content.Context
+import android.content.res.Configuration
 import android.os.Build
 import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
@@ -122,7 +124,7 @@ fun PreviewTheme(
     dynamicColors: Boolean = false,
     content: @Composable () -> Unit,
 ) {
-    val colorScheme = currentTheme.getColorScheme(darkThemePreference, dynamicColors)
+    val colorScheme = currentTheme.getColorScheme(LocalContext.current, darkThemePreference, dynamicColors)
 
     CompositionLocalProvider(LocalTypographySettings provides TypographySettings(1f, sansFontFamily = robotoSansFontFamily(FontSelection.RobotoFlex), monoFontFamily = robotoMonoFontFamily())) {
         val typographySettings = LocalTypographySettings.current
@@ -151,7 +153,7 @@ fun ComponentActivity.FeederTheme(
 ) {
     val darkSystemIcons = currentTheme.isDarkSystemIcons()
     val darkNavIcons = currentTheme.isDarkNavIcons()
-    val colorScheme = currentTheme.getColorScheme(darkThemePreference, dynamicColors)
+    val colorScheme = currentTheme.getColorScheme(LocalContext.current, darkThemePreference, dynamicColors)
     val typographySettings = LocalTypographySettings.current
 
     val feederTypography =
@@ -240,7 +242,7 @@ fun NexusOverlay.FeederTheme(
     dynamicColors: Boolean = false,
     content: @Composable () -> Unit,
 ) {
-    val colorScheme = currentTheme.getColorScheme(darkThemePreference, dynamicColors)
+    val colorScheme = currentTheme.getColorScheme(LocalContext.current, darkThemePreference, dynamicColors)
     val typographySettings = LocalTypographySettings.current
 
     val feederTypography =
@@ -279,8 +281,8 @@ private fun ThemeOptions.isDarkNavIcons(): Boolean {
     return isDarkSystemIcons()
 }
 
-@Composable
-private fun ThemeOptions.getColorScheme(
+fun ThemeOptions.getColorScheme(
+    context: Context,
     darkThemePreference: DarkThemePreferences,
     dynamicColors: Boolean,
 ): ColorScheme {
@@ -292,18 +294,20 @@ private fun ThemeOptions.getColorScheme(
 
             ThemeOptions.NIGHT -> true
             ThemeOptions.SYSTEM -> {
-                isSystemInDarkTheme()
+                (context.resources.configuration.uiMode and
+                        Configuration.UI_MODE_NIGHT_MASK) ==
+                        Configuration.UI_MODE_NIGHT_YES
             }
         }
 
     val colorScheme =
         when {
             Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && dynamicColors && dark -> {
-                dynamicDarkColorScheme(LocalContext.current)
+                dynamicDarkColorScheme(context)
             }
 
             Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && dynamicColors && !dark -> {
-                dynamicLightColorScheme(LocalContext.current)
+                dynamicLightColorScheme(context)
             }
 
             dark -> darkColors
