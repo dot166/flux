@@ -162,6 +162,7 @@
       android:exported="true"
       android:label="@string/open_link_in_browser"
       android:launchMode="singleInstance"
+      android:excludeFromRecents="true"
       android:taskAffinity="${applicationId}.OpenLinkTask" />
 
     <!-- Used by some external apps -->
