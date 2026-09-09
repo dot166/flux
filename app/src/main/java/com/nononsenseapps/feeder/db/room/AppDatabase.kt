@@ -54,7 +54,7 @@ private const val LOG_TAG = "FEEDER_APPDB"
     views = [
         FeedsWithItemsForNavDrawer::class,
     ],
-    version = 40,
+    version = 41,
 )
 @TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
@@ -139,6 +139,7 @@ fun getAllMigrations(di: DI) =
         MigrationFrom37To38(di),
         MIGRATION_38_39,
         MIGRATION_39_40,
+        MIGRATION_40_41,
     )
 
 /*
@@ -224,6 +225,17 @@ object MIGRATION_39_40 : Migration(39, 40) {
             ALTER TABLE feeds ADD COLUMN show_in_all INTEGER NOT NULL DEFAULT 1
             """.trimIndent(),
         )
+    }
+}
+
+@Suppress("ClassName")
+object MIGRATION_40_41 : Migration(40, 41) {
+    override fun migrate(database: SupportSQLiteDatabase) {
+        database.execSQL("drop view feeds_with_items_for_nav_drawer")
+        // Room schema is anal about whitespace
+        @Suppress("ktlint:standard:max-line-length")
+        val sql = "CREATE VIEW `feeds_with_items_for_nav_drawer` AS select feeds.id as feed_id, item_id, case when custom_title is '' then title else custom_title end as display_title, tag, image_url, case when feeds.show_in_all = 0 then 0 else unread end as unread, bookmarked\n    from feeds\n    left join (\n        select id as item_id, feed_id, read_time is null as unread, bookmarked\n        from feed_items\n        where block_time is null\n    )\n    ON feeds.id = feed_id"
+        database.execSQL(sql)
     }
 }
 
