@@ -27,6 +27,7 @@ import androidx.navigation.NavDeepLinkBuilder
 import io.github.dot166.flux.R
 import com.nononsenseapps.feeder.archmodel.ItemOpener
 import com.nononsenseapps.feeder.archmodel.Repository
+import com.nononsenseapps.feeder.archmodel.toSafeString
 import com.nononsenseapps.feeder.db.COL_LINK
 import com.nononsenseapps.feeder.db.URI_FEEDITEMS
 import com.nononsenseapps.feeder.db.room.FeedDao
@@ -150,7 +151,7 @@ private suspend fun singleNotification(
     style.bigText(text)
     style.setBigContentTitle(title)
 
-    val contentIntent = getArticleNotificationIntent(context, item.id, item.link, articleOpener)
+    val contentIntent = getArticleNotificationIntent(context, item.id, item.link.toSafeString(), articleOpener)
 
     val pendingIntent =
         PendingIntent.getActivity(
