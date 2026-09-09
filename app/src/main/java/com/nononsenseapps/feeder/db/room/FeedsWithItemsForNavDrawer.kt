@@ -5,7 +5,7 @@ import androidx.room.DatabaseView
 
 @DatabaseView(
     value = """
-    select feeds.id as feed_id, item_id, case when custom_title is '' then title else custom_title end as display_title, tag, image_url, unread, bookmarked
+    select feeds.id as feed_id, item_id, case when custom_title is '' then title else custom_title end as display_title, tag, image_url, case when feeds.show_in_all = 0 then 0 else unread end as unread, bookmarked
     from feeds
     left join (
         select id as item_id, feed_id, read_time is null as unread, bookmarked
