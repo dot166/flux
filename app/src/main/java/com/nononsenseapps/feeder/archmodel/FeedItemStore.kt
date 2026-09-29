@@ -161,23 +161,29 @@ class FeedItemStore(
             append(")\n")
         }
 
-        when {
-            search.isNotEmpty() -> {
-                // User probably means the literal characters
-                val sanitizedSearch =
-                    search
-                        .replace("\\", "\\\\")
-                        .replace("%", "\\%")
-                        .replace("_", "\\_")
-                append("AND (\n")
-                append("plain_title LIKE ?\n").also { args.add("%$sanitizedSearch%") }
-                append("OR plain_snippet LIKE ?\n").also { args.add("%$sanitizedSearch%") }
-                append(")\n")
-            }
-            onlySavedArticles -> append("AND bookmarked = 1\n")
-            feedId > ID_UNSET -> append("AND feed_id IS ?\n").also { args.add(feedId) }
-            feedId == ID_ALL_FEEDS || feedId == ID_UNSET -> append("AND show_in_all = 1\n")
-            tag.isNotEmpty() -> append("AND tag IS ?\n").also { args.add(tag) }
+        if (search.isNotEmpty()) {
+            // User probably means the literal characters
+            val sanitizedSearch =
+                search
+                    .replace("\\", "\\\\")
+                    .replace("%", "\\%")
+                    .replace("_", "\\_")
+            append("AND (\n")
+            append("plain_title LIKE ?\n").also { args.add("%$sanitizedSearch%") }
+            append("OR plain_snippet LIKE ?\n").also { args.add("%$sanitizedSearch%") }
+            append(")\n")
+        }
+        if (onlySavedArticles) {
+            append("AND bookmarked = 1\n")
+        }
+        if (feedId > ID_UNSET) {
+            append("AND feed_id IS ?\n").also { args.add(feedId) }
+        }
+        if (feedId == ID_ALL_FEEDS || feedId == ID_UNSET) {
+            append("AND show_in_all = 1\n")
+        }
+        if (tag.isNotEmpty()) {
+            append("AND tag IS ?\n").also { args.add(tag) }
         }
     }
 
