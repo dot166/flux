@@ -5,7 +5,6 @@ import java.util.Properties
 val keystorePropertiesFile = rootProject.file("keystore.properties")
 val useKeystoreProperties = keystorePropertiesFile.canRead()
 val keystoreProperties = Properties()
-println(useKeystoreProperties)
 if (useKeystoreProperties) {
     keystoreProperties.load(FileInputStream(keystorePropertiesFile))
 }
